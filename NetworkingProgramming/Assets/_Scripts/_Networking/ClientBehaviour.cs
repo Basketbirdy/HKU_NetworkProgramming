@@ -1,3 +1,4 @@
+using Unity.Collections;
 using Unity.Networking.Transport;
 using UnityEngine;
 
@@ -60,5 +61,10 @@ public class ClientBehaviour : MonoBehaviour
                 connection = default;
             }
         }
+    }
+
+    private void ReceiveMessage(ref DataStreamReader reader)
+    {
+        
     }
 }

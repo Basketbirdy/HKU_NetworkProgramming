@@ -7,6 +7,8 @@ public class ServerBehaviour : MonoBehaviour
     NetworkDriver driver;
     NativeList<NetworkConnection> connections;
 
+    System.Type[] messageTypes = new[] { typeof(SendPositionMessage) };
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -79,5 +81,17 @@ public class ServerBehaviour : MonoBehaviour
                 }
             }
         }
+    }
+
+    private void SendMessage(NetworkMessage message, int connectionId)
+    {
+        driver.BeginSend(connections[connectionId], out var writer);
+        message.Encode(ref writer);
+        driver.EndSend(writer);
+    }
+
+    private void ReceiveMessage(DataStreamReader reader)
+    {
+
     }
 }
