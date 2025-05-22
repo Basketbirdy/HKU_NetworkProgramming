@@ -1,13 +1,13 @@
+using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Networking.Transport;
 using UnityEngine;
 
 public class ServerBehaviour : MonoBehaviour
 {
-    NetworkDriver driver;
-    NativeList<NetworkConnection> connections;
 
-    System.Type[] messageTypes = new[] { typeof(SendPositionMessage) };
+    public NetworkDriver driver;
+    public NativeList<NetworkConnection> connections;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -64,14 +64,30 @@ public class ServerBehaviour : MonoBehaviour
             {
                 if(cmd == NetworkEvent.Type.Data) 
                 {
-                    uint number = stream.ReadUInt();
-                    Debug.Log($"Got {number} from a client, adding 2 to it");
+                    NetworkMessageType messageType = (NetworkMessageType)stream.ReadUInt();
 
-                    number += 2;
+                    if(NetworkMessageHandler.networkMessageHandlers.ContainsKey(messageType))
+                    {
+                        try
+                        {
+                            NetworkMessageHandler.networkMessageHandlers[messageType].Invoke(this, connections[i], stream);
+                        }
+                        catch
+                        {
+                            Debug.LogError($"[Server] read-order does not mimic write-order!");
+                        }
+                    }
+                    else
+                    {
+                        Debug.LogError($"[Server] no message type identified!");
+                    }
+                    //uint number = stream.ReadUInt();
 
-                    driver.BeginSend(NetworkPipeline.Null, connections[i], out var writer);
-                    writer.WriteUInt(number);
-                    driver.EndSend(writer);
+                    //number += 2;
+
+                    //driver.BeginSend(NetworkPipeline.Null, connections[i], out var writer);
+                    //writer.WriteUInt(number);
+                    //driver.EndSend(writer);
                 }
                 else if(cmd == NetworkEvent.Type.Disconnect)
                 {
@@ -83,15 +99,15 @@ public class ServerBehaviour : MonoBehaviour
         }
     }
 
-    private void SendMessage(NetworkMessage message, int connectionId)
-    {
-        driver.BeginSend(connections[connectionId], out var writer);
-        message.Encode(ref writer);
-        driver.EndSend(writer);
-    }
+    //private void SendMessage(NetworkMessage message, int connectionId)
+    //{
+    //    driver.BeginSend(connections[connectionId], out var writer);
+    //    message.Encode(ref writer);
+    //    driver.EndSend(writer);
+    //}
 
-    private void ReceiveMessage(DataStreamReader reader)
-    {
+    //private void ReceiveMessage(DataStreamReader reader)
+    //{
 
-    }
+    //}
 }

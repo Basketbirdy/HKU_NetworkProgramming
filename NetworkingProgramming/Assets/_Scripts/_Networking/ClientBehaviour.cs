@@ -4,8 +4,9 @@ using UnityEngine;
 
 public class ClientBehaviour : MonoBehaviour
 {
-    NetworkDriver driver;
-    NetworkConnection connection;
+
+    public NetworkDriver driver;
+    public NetworkConnection connection;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -44,16 +45,35 @@ public class ClientBehaviour : MonoBehaviour
 
                 uint value = 1;
                 driver.BeginSend(connection, out var writer);
+                writer.WriteUInt((uint)NetworkMessageType.SEND_UINT);
                 writer.WriteUInt(value);
                 driver.EndSend(writer);
             }
             else if(cmd == NetworkEvent.Type.Data)
             {
-                uint value = stream.ReadUInt();
-                Debug.Log($"Got the value {value} back from the server");
+                NetworkMessageType messageType = (NetworkMessageType)stream.ReadUInt();
 
-                connection.Disconnect(driver);
-                connection = default;
+                if (NetworkMessageHandler.networkMessageHandlers.ContainsKey(messageType))
+                {
+                    try
+                    {
+                        NetworkMessageHandler.networkMessageHandlers[messageType].Invoke(this, connection, stream);
+                    }
+                    catch
+                    {
+                        Debug.LogError($"[Server] read-order does not mimic write-order!");
+                    }
+                }
+                else
+                {
+                    Debug.LogError($"[Server] no message type identified!");
+                }
+
+                //uint value = stream.ReadUInt();
+                //Debug.Log($"Got the value {value} back from the server");
+
+                //connection.Disconnect(driver);
+                //connection = default;
             }
             else if(cmd == NetworkEvent.Type.Disconnect)
             {
