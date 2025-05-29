@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Networking.Transport;
@@ -5,9 +6,10 @@ using UnityEngine;
 
 public class ServerBehaviour : MonoBehaviour
 {
-
     public NetworkDriver driver;
     public NativeList<NetworkConnection> connections;
+
+    private Dictionary<int, NetworkConnection> connectionId = new Dictionary<int, NetworkConnection>();
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -66,28 +68,25 @@ public class ServerBehaviour : MonoBehaviour
                 {
                     NetworkMessageType messageType = (NetworkMessageType)stream.ReadUInt();
 
-                    if(NetworkMessageHandler.networkMessageHandlers.ContainsKey(messageType))
+                    // process received message
+                    NetworkMessage msg = (NetworkMessage)Activator.CreateInstance(NetworkMessageInfo.typeMap[messageType]);
+                    msg.Decode(ref stream);
+
+                    if(NetworkMessageHandler.clientMessageHandlers.ContainsKey(messageType))
                     {
                         try
                         {
-                            NetworkMessageHandler.networkMessageHandlers[messageType].Invoke(this, connections[i], stream);
+                            NetworkMessageHandler.clientMessageHandlers[messageType].Invoke(this, connections[i], msg);
                         }
                         catch
                         {
-                            Debug.LogError($"[Server] read-order does not mimic write-order!");
+                            Debug.LogError($"[Server] Message not properly formatted! {messageType}");
                         }
                     }
                     else
                     {
                         Debug.LogError($"[Server] no message type identified!");
                     }
-                    //uint number = stream.ReadUInt();
-
-                    //number += 2;
-
-                    //driver.BeginSend(NetworkPipeline.Null, connections[i], out var writer);
-                    //writer.WriteUInt(number);
-                    //driver.EndSend(writer);
                 }
                 else if(cmd == NetworkEvent.Type.Disconnect)
                 {
@@ -99,15 +98,23 @@ public class ServerBehaviour : MonoBehaviour
         }
     }
 
-    //private void SendMessage(NetworkMessage message, int connectionId)
-    //{
-    //    driver.BeginSend(connections[connectionId], out var writer);
-    //    message.Encode(ref writer);
-    //    driver.EndSend(writer);
-    //}
+    // public message sending functions
 
-    //private void ReceiveMessage(DataStreamReader reader)
-    //{
-
-    //}
+    public void SendNetworkMessageAll(NetworkMessage msg) 
+    {
+        for(int i = 0; i < connections.Length ; i++)
+        {
+            var connection = connections[i];
+            driver.BeginSend(connection, out DataStreamWriter writer);
+            msg.Encode(ref writer);
+            driver.EndSend(writer);
+        }
+    }
+    public void SendNetworkMessageOne(uint id, NetworkMessage msg) 
+    {
+        var connection = connections[(int)id];
+        driver.BeginSend(connection, out DataStreamWriter writer);
+        msg.Encode(ref writer);
+        driver.EndSend(writer);
+    }
 }

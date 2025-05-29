@@ -3,49 +3,49 @@ using Unity.Collections;
 using Unity.Networking.Transport;
 using UnityEngine;
 
-public class NetworkMessageHandler
+public delegate void ServerNetworkMessage(ServerBehaviour server, NetworkConnection connection, NetworkMessage msg);
+public delegate void ClientNetworkMessage(ClientBehaviour client, NetworkMessage msg);
+
+public enum NetworkMessageType
 {
-    public delegate void NetworkMessage(object handler, NetworkConnection connection, DataStreamReader reader);
+    OBJECT_POSITION
+}
 
-
-    public static Dictionary<NetworkMessageType, NetworkMessage> networkMessageHandlers = new Dictionary<NetworkMessageType, NetworkMessage>
+public static class NetworkMessageHandler
+{
+    /// <summary>
+    /// messages received by the server, from clients
+    /// </summary>
+    public static Dictionary<NetworkMessageType, ServerNetworkMessage> clientMessageHandlers = new Dictionary<NetworkMessageType, ServerNetworkMessage>
     {
-        { NetworkMessageType.POSITION, NetworkMessageHandler.HandlePosition },
-        { NetworkMessageType.SEND_UINT, NetworkMessageHandler.HandleUInt },
-        { NetworkMessageType.SHOW_UINT, NetworkMessageHandler.HandleShowingUInt }
+        {NetworkMessageType.OBJECT_POSITION, HandleClientObjectPosition}
     };
 
-    public static void HandlePosition(object handler, NetworkConnection connection, DataStreamReader stream)
+    /// <summary>
+    /// messages received by clients from the server
+    /// </summary>
+    public static Dictionary<NetworkMessageType, ClientNetworkMessage> serverMessageHandlers = new Dictionary<NetworkMessageType, ClientNetworkMessage>
     {
-        float x = stream.ReadUInt();
-        float y = stream.ReadUInt();
-        float z = stream.ReadUInt();
 
-        Vector3 position = new Vector3(x, y, z);
+    };
 
-        ServerBehaviour server = handler as ServerBehaviour;    // for if I want to send a response
-    }
-
-    public static void HandleUInt(object handler, NetworkConnection connection, DataStreamReader stream)
+    private static void HandleClientObjectPosition(object sender, NetworkConnection connection, NetworkMessage networkMessage)
     {
-        uint x = stream.ReadUInt();
-        Debug.Log($"Got {x} from a client, adding 2 to it");
+        // getting data
+        ObjectPositionMessage message = networkMessage as ObjectPositionMessage;
 
-        x += 2;
+        // handling data
+        NetworkManager.instance.Get(message.objectId, out GameObject obj);
+        obj.transform.position = message.position;
 
         // respond
-        ServerBehaviour server = handler as ServerBehaviour;
-        server.driver.BeginSend(NetworkPipeline.Null, connection, out DataStreamWriter writer);
-
-        writer.WriteUInt((uint)NetworkMessageType.SHOW_UINT);
-        writer.WriteUInt(x);
-
-        server.driver.EndSend(writer);
     }
+}
 
-    public static void HandleShowingUInt(object handler, NetworkConnection connection, DataStreamReader stream)
+public static class NetworkMessageInfo
+{
+    public static Dictionary<NetworkMessageType, System.Type> typeMap = new Dictionary<NetworkMessageType, System.Type>
     {
-        uint x = stream.ReadUInt();
-        Debug.Log($"Received {x}");
-    }
+        {NetworkMessageType.OBJECT_POSITION, typeof(ObjectPositionMessage) }
+    };
 }

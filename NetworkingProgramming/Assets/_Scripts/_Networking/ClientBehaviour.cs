@@ -1,3 +1,4 @@
+using System;
 using Unity.Collections;
 using Unity.Networking.Transport;
 using UnityEngine;
@@ -43,21 +44,25 @@ public class ClientBehaviour : MonoBehaviour
             {
                 Debug.Log("We are now connected to the server");
 
-                uint value = 1;
-                driver.BeginSend(connection, out var writer);
-                writer.WriteUInt((uint)NetworkMessageType.SEND_UINT);
-                writer.WriteUInt(value);
-                driver.EndSend(writer);
+                //uint value = 1;
+                //driver.BeginSend(connection, out var writer);
+                //writer.WriteUInt((uint)NetworkMessageType.SEND_UINT);
+                //writer.WriteUInt(value);
+                //driver.EndSend(writer);
             }
             else if(cmd == NetworkEvent.Type.Data)
             {
                 NetworkMessageType messageType = (NetworkMessageType)stream.ReadUInt();
 
-                if (NetworkMessageHandler.networkMessageHandlers.ContainsKey(messageType))
+                // process received message
+                NetworkMessage msg = (NetworkMessage)Activator.CreateInstance(NetworkMessageInfo.typeMap[messageType]);
+                msg.Decode(ref stream);
+
+                if (NetworkMessageHandler.serverMessageHandlers.ContainsKey(messageType))
                 {
                     try
                     {
-                        NetworkMessageHandler.networkMessageHandlers[messageType].Invoke(this, connection, stream);
+                        NetworkMessageHandler.serverMessageHandlers[messageType].Invoke(this, msg);
                     }
                     catch
                     {
@@ -81,10 +86,5 @@ public class ClientBehaviour : MonoBehaviour
                 connection = default;
             }
         }
-    }
-
-    private void ReceiveMessage(ref DataStreamReader reader)
-    {
-        
     }
 }
