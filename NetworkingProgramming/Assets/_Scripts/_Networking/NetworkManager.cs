@@ -5,12 +5,13 @@ public enum ObjectType { }
 public class NetworkManager : MonoBehaviour
 {
     public static NetworkManager instance;
+    private static uint nextNetworkId = 0;
+    public static uint NextNetworkId {  get { return nextNetworkId; }}
 
-    private Dictionary<uint, GameObject> objects = new Dictionary<uint, GameObject>();
-    private SpawnInfo spawnInfo;
 
-    private static uint nextId;
-    public static uint NextId {  get { return nextId; }}
+    [SerializeField] private SpawnInfo spawnInfo;
+    private Dictionary<uint, GameObject> networkedObjects = new Dictionary<uint, GameObject>();
+
 
     private void Awake()
     {

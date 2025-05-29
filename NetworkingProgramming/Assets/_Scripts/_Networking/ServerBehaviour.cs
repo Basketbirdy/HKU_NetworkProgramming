@@ -8,8 +8,8 @@ public class ServerBehaviour : MonoBehaviour
 {
     public NetworkDriver driver;
     public NativeList<NetworkConnection> connections;
+    private Dictionary<NetworkConnection, int> playerIds = new Dictionary<NetworkConnection, int>();
 
-    private Dictionary<int, NetworkConnection> connectionId = new Dictionary<int, NetworkConnection>();
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()

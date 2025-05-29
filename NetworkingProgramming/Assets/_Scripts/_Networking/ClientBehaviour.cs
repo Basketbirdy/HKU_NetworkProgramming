@@ -9,6 +9,8 @@ public class ClientBehaviour : MonoBehaviour
     public NetworkDriver driver;
     public NetworkConnection connection;
 
+    public int playerId;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -43,6 +45,8 @@ public class ClientBehaviour : MonoBehaviour
             if(cmd == NetworkEvent.Type.Connect)
             {
                 Debug.Log("We are now connected to the server");
+
+                // TODO - get player Id
 
                 //uint value = 1;
                 //driver.BeginSend(connection, out var writer);
@@ -86,5 +90,12 @@ public class ClientBehaviour : MonoBehaviour
                 connection = default;
             }
         }
+    }
+
+    public void SendNetworkMessageOne(uint id, NetworkMessage msg)
+    {
+        driver.BeginSend(connection, out DataStreamWriter writer);
+        msg.Encode(ref writer);
+        driver.EndSend(writer);
     }
 }
