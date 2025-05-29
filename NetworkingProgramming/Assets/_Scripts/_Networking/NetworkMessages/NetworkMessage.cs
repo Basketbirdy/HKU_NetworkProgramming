@@ -1,7 +1,7 @@
 using Unity.Collections;
 using UnityEngine;
 
-public abstract class NetworkMessage : MonoBehaviour
+public abstract class NetworkMessage
 {
     private static uint nextId = 0;
     public static uint NextId = nextId++;

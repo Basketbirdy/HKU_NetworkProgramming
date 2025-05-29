@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Networking.Transport;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class ServerBehaviour : MonoBehaviour
@@ -105,16 +106,30 @@ public class ServerBehaviour : MonoBehaviour
         for(int i = 0; i < connections.Length ; i++)
         {
             var connection = connections[i];
-            driver.BeginSend(connection, out DataStreamWriter writer);
-            msg.Encode(ref writer);
-            driver.EndSend(writer);
+            int result = driver.BeginSend(connection, out DataStreamWriter writer);
+            if(result == 0)
+            {
+                msg.Encode(ref writer);
+                driver.EndSend(writer);
+            }
+            else
+            {
+                Debug.LogError($"[Server] failed writing network message to all! {result}", this);
+            }
         }
     }
     public void SendNetworkMessageOne(uint id, NetworkMessage msg) 
     {
         var connection = connections[(int)id];
-        driver.BeginSend(connection, out DataStreamWriter writer);
-        msg.Encode(ref writer);
-        driver.EndSend(writer);
+        int result = driver.BeginSend(connection, out DataStreamWriter writer);
+        if (result == 0)
+        {
+            msg.Encode(ref writer);
+            driver.EndSend(writer);
+        }
+        else
+        {
+            Debug.LogError($"[Server] failed writing network message to all! {result}", this);
+        }
     }
 }

@@ -8,11 +8,7 @@ public class ObjectPositionMessage : NetworkMessage
     public uint objectId;
     public Vector3 position;
 
-    public ObjectPositionMessage(uint objectId, Vector3 position)
-    {
-        this.objectId = objectId;
-        this.position = position;
-    }
+    public ObjectPositionMessage() { }
 
     public override void Encode(ref DataStreamWriter writer)
     {

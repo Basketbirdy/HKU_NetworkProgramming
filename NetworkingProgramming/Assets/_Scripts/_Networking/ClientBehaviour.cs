@@ -38,13 +38,16 @@ public class ClientBehaviour : MonoBehaviour
             return;
         }
 
-        Unity.Collections.DataStreamReader stream;
+        DataStreamReader stream;
         NetworkEvent.Type cmd;
         while((cmd = connection.PopEvent(driver, out stream)) != NetworkEvent.Type.Empty)
         {
             if(cmd == NetworkEvent.Type.Connect)
             {
                 Debug.Log("We are now connected to the server");
+
+                NetworkMessage message = new ObjectPositionMessage { objectId = 1, position = Vector3.one };
+                SendNetworkMessage(message);
 
                 // TODO - get player Id
 
@@ -92,10 +95,21 @@ public class ClientBehaviour : MonoBehaviour
         }
     }
 
-    public void SendNetworkMessageOne(uint id, NetworkMessage msg)
+    /// <summary>
+    /// prepare, write and send a network message to the server
+    /// </summary>
+    /// <param name="msg"></param>
+    public void SendNetworkMessage(NetworkMessage msg)
     {
-        driver.BeginSend(connection, out DataStreamWriter writer);
-        msg.Encode(ref writer);
-        driver.EndSend(writer);
+        int result = driver.BeginSend(connection, out DataStreamWriter writer);
+        if(result == 0)
+        {
+            msg.Encode(ref writer);
+            driver.EndSend(writer);
+        }
+        else
+        {
+            Debug.LogError($"[Client] failed writing network message! {result}", this);
+        }
     }
 }
