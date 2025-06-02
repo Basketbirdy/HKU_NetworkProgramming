@@ -10,24 +10,29 @@ public class TimedPopup : MonoBehaviour
     [Space]
     [SerializeField] private TextMeshProUGUI header;
     [SerializeField] private TextMeshProUGUI message;
+    private Coroutine popup;
 
     public void Show(string header, string message)
     {
+        if(popup != null) { StopCoroutine(popup); popup = null; }
+
         this.header.text = header;
         this.message.text = message;
-        StartCoroutine(Timer(duration));
+
+        gameObject.SetActive(true);
+        popup = StartCoroutine(Timer(duration));
+    }
+
+    public void Close()
+    {
+        gameObject.SetActive(false);
     }
 
     IEnumerator Timer(float duration)
     {
-        float elapsed = 0;
-        while (elapsed < duration) 
-        {
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
+        yield return new WaitForSeconds(duration);
 
         onElapsed?.Invoke();
-        gameObject.SetActive(false);
+        Close();
     }
 }
