@@ -8,8 +8,19 @@ public delegate void ClientNetworkMessage(ClientBehaviour client, NetworkMessage
 
 public enum NetworkMessageType
 {
+    HANDSHAKE,
     OBJECT_POSITION,
     REMOTE_PROCEDURE_CALL
+}
+
+public static class NetworkMessageInfo
+{
+    public static Dictionary<NetworkMessageType, System.Type> typeMap = new Dictionary<NetworkMessageType, System.Type>
+    {
+        {NetworkMessageType.OBJECT_POSITION, typeof(ObjectPositionMessage) },
+        {NetworkMessageType.REMOTE_PROCEDURE_CALL, typeof(RPCMessage) },
+        {NetworkMessageType.HANDSHAKE, typeof(HandshakeMessage) }
+    };
 }
 
 public static class NetworkMessageHandler
@@ -20,6 +31,7 @@ public static class NetworkMessageHandler
     public static Dictionary<NetworkMessageType, ServerNetworkMessage> clientMessageHandlers = new Dictionary<NetworkMessageType, ServerNetworkMessage>
     {
         {NetworkMessageType.OBJECT_POSITION, HandleClientObjectPosition},
+        {NetworkMessageType.HANDSHAKE, HandleClientHandshake}
     };
 
     /// <summary>
@@ -57,6 +69,44 @@ public static class NetworkMessageHandler
     }
 
     // client handlers
+
+    private static void HandleClientHandshake(object recipient, NetworkConnection connection, NetworkMessage networkMessage)
+    {
+        // getting data
+        ClientBehaviour client = recipient as ClientBehaviour;
+
+        // check if player cap has been reached
+        // if yes, send error back
+        // if no, proceed
+
+        // add this player to the player list
+        // spawn player (does the server actually need to spawn visible objects?)
+        
+        // send all existing player data back (let them know who is in the lobby)  
+
+        // send player to all other clients (just the other in this case, since
+    }
+
+    //sub client methods
+
+    public static void HandleRPC(ClientBehaviour client, RPCMessage msg)
+    {
+        RPCMessage message = msg;
+
+        // try to call the function
+        try
+        {
+            message.methodInfo.Invoke(message.target, message.data);
+        }
+        catch (System.Exception e)
+        {
+            Debug.Log(e.Message);
+            Debug.Log(e.StackTrace);
+        }
+    }
+
+    // server handlers
+
     private static void HandleServerObjectPosition(object recipient, NetworkMessage networkMessage) // handle object position message sent by server, received by client
     {
         // getting data
@@ -79,25 +129,6 @@ public static class NetworkMessageHandler
         // respond
     }
 
-    //sub client methods
-
-    public static void HandleRPC(ClientBehaviour client, RPCMessage msg)
-    {
-        RPCMessage message = msg;
-
-        // try to call the function
-        try
-        {
-            message.methodInfo.Invoke(message.target, message.data);
-        }
-        catch (System.Exception e)
-        {
-            Debug.Log(e.Message);
-            Debug.Log(e.StackTrace);
-        }
-    }
-
-    // server handlers
     // sub server methods
     public static void HandleRPC(ServerBehaviour server, RPCMessage msg)
     {
@@ -114,13 +145,4 @@ public static class NetworkMessageHandler
             Debug.Log(e.StackTrace);
         }
     }
-}
-
-public static class NetworkMessageInfo
-{
-    public static Dictionary<NetworkMessageType, System.Type> typeMap = new Dictionary<NetworkMessageType, System.Type>
-    {
-        {NetworkMessageType.OBJECT_POSITION, typeof(ObjectPositionMessage) },
-        {NetworkMessageType.REMOTE_PROCEDURE_CALL, typeof(RPCMessage) }
-    };
 }

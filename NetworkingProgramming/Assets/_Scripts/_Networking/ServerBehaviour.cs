@@ -11,6 +11,8 @@ public class ServerBehaviour : MonoBehaviour
     public NativeList<NetworkConnection> connections;
     private Dictionary<NetworkConnection, int> playerIds = new Dictionary<NetworkConnection, int>();
 
+    // server game data (should this be in game manager?)
+    private Dictionary<NetworkConnection, string> playerList = new Dictionary<NetworkConnection, string>();
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
