@@ -1,10 +1,14 @@
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class LoginUIController : MonoBehaviour
 {
+    [Header("Scene indices")]
+    [SerializeField] private int startupScene = 0;
+
     [Header("Login")]
     [SerializeField] private TMP_InputField login_EmailField;
     [SerializeField] private TMP_InputField login_PasswordField;    
@@ -17,7 +21,13 @@ public class LoginUIController : MonoBehaviour
     [SerializeField] private Button signin_Confirm;
 
     [Header("Error")]
-    [SerializeField] private TimedPopup error_Popup;
+    private IPopup error_Popup;
+
+    private void Awake()
+    {
+        error_Popup = GetComponentInChildren<IPopup>();
+        if(error_Popup == null) { Debug.LogError($"Missing IPopup!"); }
+    }
 
     private void Start()
     {
@@ -46,6 +56,10 @@ public class LoginUIController : MonoBehaviour
         {
             ShowError($"Failed login!", $"Could not log in. <br>Please check the inserted credentials");
         }
+        else
+        {
+            GoStartup();
+        }
     }
 
     public void Signin()
@@ -66,5 +80,14 @@ public class LoginUIController : MonoBehaviour
         {
             ShowError($"Failed signin!", $"Could not sign in. <br>Please check the inserted credentials");
         }
+        else
+        {
+            GoStartup();
+        }
+    }
+
+    public void GoStartup()
+    {
+        SceneManager.LoadScene(startupScene);
     }
 }

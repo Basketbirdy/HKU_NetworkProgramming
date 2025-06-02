@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class TimedPopup : MonoBehaviour
+public class TimedPopup : MonoBehaviour, IPopup
 {
     [SerializeField] private float duration;
     [SerializeField] private UnityEvent onElapsed;

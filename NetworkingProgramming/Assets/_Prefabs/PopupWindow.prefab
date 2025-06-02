@@ -270,7 +270,7 @@ GameObject:
   - component: {fileID: 7247678219287771807}
   - component: {fileID: 7825961810064534106}
   m_Layer: 5
-  m_Name: ErrorWindow
+  m_Name: PopupWindow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
