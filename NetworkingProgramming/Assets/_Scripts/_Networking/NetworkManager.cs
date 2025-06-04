@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum ObjectType { }
+public enum ObjectType { GAMEMANAGER, }
 public class NetworkManager : MonoBehaviour
 {
-    public static NetworkManager instance;
+    public static NetworkManager Instance { get; private set; }
     private static uint nextNetworkId = 0;
     public static uint NextNetworkId {  get { return nextNetworkId; }}
 
@@ -14,7 +14,7 @@ public class NetworkManager : MonoBehaviour
 
     private void Awake()
     {
-        if(instance == null) { instance = this; }
+        if(Instance == null) { Instance = this; }
         else { Destroy(this); }
     }
 

@@ -23,4 +23,17 @@ public class NetworkedBehaviour : MonoBehaviour
             server = FindFirstObjectByType<ServerBehaviour>();
         }
     } 
+
+    protected virtual void Update()
+    {
+        if(isLocal)
+        {
+
+        }
+
+        if(isServer)
+        {
+
+        }
+    }
 }
