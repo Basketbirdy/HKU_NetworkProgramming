@@ -9,7 +9,9 @@ public delegate void ClientNetworkMessage(ClientBehaviour client, NetworkMessage
 public enum NetworkMessageType
 {
     OBJECT_POSITION,
-    REMOTE_PROCEDURE_CALL
+    REMOTE_PROCEDURE_CALL,
+
+    GAME_START,
 }
 
 public static class NetworkMessageHandler
@@ -20,6 +22,7 @@ public static class NetworkMessageHandler
     public static Dictionary<NetworkMessageType, ServerNetworkMessage> clientMessageHandlers = new Dictionary<NetworkMessageType, ServerNetworkMessage>
     {
         {NetworkMessageType.OBJECT_POSITION, HandleClientObjectPosition},
+        {NetworkMessageType.GAME_START, HandleClientStartGame }
     };
 
     /// <summary>
@@ -31,6 +34,14 @@ public static class NetworkMessageHandler
     };
 
     // client handlers
+    private static void HandleClientStartGame(object recipient, NetworkConnection connection, NetworkMessage message)
+    {
+        ServerBehaviour server = recipient as ServerBehaviour;
+        StartGameMessage msg = message as StartGameMessage;
+
+        Debug.Log("Received request to start game");
+    }
+
     private static void HandleClientObjectPosition(object recipient, NetworkConnection connection, NetworkMessage networkMessage) // handle object position message sent by client, received by server
     {
         // getting data
