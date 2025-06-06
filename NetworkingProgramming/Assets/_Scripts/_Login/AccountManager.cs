@@ -5,7 +5,7 @@ public class AccountManager : MonoBehaviour
     public static AccountManager Instance { get; private set; }
 
     [Header("Account data")]
-    public int User_Id => userData.user_id;
+    public int User_Id => userData.id;
     public string Nickname => userData.nickname;
     public bool LoggedIn => userData != null;
 

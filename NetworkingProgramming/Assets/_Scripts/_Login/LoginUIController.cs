@@ -1,8 +1,8 @@
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.Threading.Tasks;
 
 public class LoginUIController : MonoBehaviour
 {
@@ -39,7 +39,11 @@ public class LoginUIController : MonoBehaviour
         error_Popup.Show(header, message);
     }
 
-    public void Login()
+    public void TryLogin()
+    {
+        _ = Login();    // _ variable name, means it is ignored
+    }
+    private async Task Login()
     {
         string email = login_EmailField.text;
         string password = login_PasswordField.text;
@@ -52,7 +56,7 @@ public class LoginUIController : MonoBehaviour
         }
 
         Debug.Log($"[Login] Attempting login! {email}, {password}");
-        if(!LoginService.TryLogin(email, password))
+        if (await LoginService.TryLogin(email, password) == false)
         {
             ShowError($"Failed login!", $"Could not log in. <br>Please check the inserted credentials");
         }
@@ -62,7 +66,11 @@ public class LoginUIController : MonoBehaviour
         }
     }
 
-    public void Signin()
+    public void TrySignin()
+    {
+        _ = Signin();   // _ variable name, means it is ignored
+    }
+    private async Task Signin()
     {
         string email = signin_EmailField.text;
         string nickname = signin_NicknameField.text;
@@ -76,7 +84,7 @@ public class LoginUIController : MonoBehaviour
         }
             
         Debug.Log($"[Signin] Attempting signin! {email}, {nickname}, {password}");
-        if (!LoginService.TrySignin(signin_EmailField.text, signin_NicknameField.text, signin_PasswordField.text))
+        if (await LoginService.TrySignin(signin_EmailField.text, signin_NicknameField.text, signin_PasswordField.text) == false)
         {
             ShowError($"Failed signin!", $"Could not sign in. <br>Please check the inserted credentials");
         }

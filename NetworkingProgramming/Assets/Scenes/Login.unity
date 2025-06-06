@@ -2417,7 +2417,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 971672804}
         m_TargetAssemblyTypeName: LoginUIController, Assembly-CSharp
-        m_MethodName: Signin
+        m_MethodName: TrySignin
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2602,7 +2602,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 971672804}
         m_TargetAssemblyTypeName: LoginUIController, Assembly-CSharp
-        m_MethodName: Login
+        m_MethodName: TryLogin
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

@@ -1,27 +1,32 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 public static class LoginService
 {
-    public static bool TryLogin(string email, string password)
+    public static async Task<bool> TryLogin(string email, string password)
     {
-        string result = string.Empty;
-        // TODO - Send the data from UI Controller
+        // check if there is a session, if not create one
+        _ = await APIConnection.CheckSession(true);
+        Debug.Log($"[LoginService] completed session check! session: {APIConnection.sessionId}");
 
         // construct user_login url
+        string url = APIConnection.BuildUrl("user_login", $"sessid={APIConnection.sessionId}", $"em={email}", $"pw={password}");
+        string json = await APIConnection.MakeWebRequest(url);
+        Debug.Log($"Received response: {json}");
+        if(json == "") { return false; }
 
-        // set all current account data
-
-        // parse JSON result
-        // if result = 0
-        return false;
-        // else
-        HandleLogin(result);
+        // handle received data (response)
+        // assuming the response is in JSON format, parse the JSON into UserData class
+        HandleLogin(json);
         return true;
     }
 
-    public static bool TrySignin(string email, string nickname, string password)
+    public static async Task<bool> TrySignin(string email, string nickname, string password)
     {
+        await APIConnection.CheckSession(true);
+
         string result = string.Empty;
         // TODO - Send the data from UI Controller
 
@@ -31,19 +36,18 @@ public static class LoginService
 
         // parse JSON result
         // if result = 0
-        return false;
-        // else
         HandleLogin(result);
         return true;
     }
 
-    private static void HandleLogin(string json)
+    private static bool HandleLogin(string json)
     {
         // set account information in AccountManager
-        var results = JsonUtility.FromJson(json, typeof(UserData));
+        UserData results = JsonUtility.FromJson<UserData>(json);
+        if(results == null) { return false; }
 
-        UserData uData = results as UserData;
-        AccountManager.Instance.SetAccount(uData);
+        AccountManager.Instance.SetAccount(results);
+        return true;
     }
 }
 
@@ -51,11 +55,13 @@ public class UserData
 {
     public UserData(string nickname)
     {
-        user_id = -1;
+        id = -1;
         this.nickname = nickname;
     }
 
-    // TODO - recreate database columns
-    public int user_id;
+    public int id;
+    public string email;
     public string nickname;
+    public string password;
+    public string dob;  // date of birth
 }
