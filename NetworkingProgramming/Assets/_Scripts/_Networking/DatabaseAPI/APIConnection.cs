@@ -60,7 +60,7 @@ public static class APIConnection
         }
 
         ClearSession();
-        sessionId = response;
+        sessionId = response.Replace("\"", "");
     }
 
     /// <summary>
