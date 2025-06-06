@@ -60,9 +60,3 @@ public class NetworkManager : MonoBehaviour
         }
     }
 }
-
-public struct SpawnInfo
-{
-    // list should be in the same order as ObjectType enum
-    public List<GameObject> prefabs;
-}

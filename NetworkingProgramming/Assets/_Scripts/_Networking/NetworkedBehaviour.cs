@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class NetworkedBehaviour : MonoBehaviour
 {
+    [Header("Networking")]
     public uint networkId = 0;
 
     public bool isLocal;

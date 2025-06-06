@@ -48,7 +48,7 @@ public class ClientBehaviour : MonoBehaviour
 
                 HandshakeMessage message = new HandshakeMessage()
                 {
-                    nickname = AccountManager.Instance.Nickname
+                    name = AccountManager.Instance.Nickname
                 };
                 SendNetworkMessage(message);
 

@@ -9,9 +9,14 @@ public delegate void ClientNetworkMessage(ClientBehaviour client, NetworkMessage
 
 public enum NetworkMessageType
 {
-    OBJECT_POSITION,
+    // general 
     REMOTE_PROCEDURE_CALL,
 
+    // general actions
+    SPAWNMESSAGE,
+    OBJECT_POSITION,
+
+    // specific
     HANDSHAKE,
     HANDSHAKE_RESPONSE,
 
@@ -22,8 +27,10 @@ public static class NetworkMessageInfo
 {
     public static Dictionary<NetworkMessageType, System.Type> typeMap = new Dictionary<NetworkMessageType, System.Type>
     {
-        {NetworkMessageType.OBJECT_POSITION, typeof(ObjectPositionMessage) },
         {NetworkMessageType.REMOTE_PROCEDURE_CALL, typeof(RPCMessage) },
+
+        {NetworkMessageType.SPAWNMESSAGE, typeof(SpawnMessage) },
+        {NetworkMessageType.OBJECT_POSITION, typeof(ObjectPositionMessage) },
 
         {NetworkMessageType.HANDSHAKE, typeof(HandshakeMessage) },
         {NetworkMessageType.HANDSHAKE_RESPONSE, typeof(HandshakeResponseMessage) }
@@ -37,7 +44,9 @@ public static class NetworkMessageHandler
     /// </summary>
     public static Dictionary<NetworkMessageType, ServerNetworkMessage> clientMessageHandlers = new Dictionary<NetworkMessageType, ServerNetworkMessage>
     {
+        {NetworkMessageType.SPAWNMESSAGE, HandleClientSpawnMessage },
         {NetworkMessageType.OBJECT_POSITION, HandleClientObjectPosition},
+
         {NetworkMessageType.GAME_START, HandleClientStartGame },
         {NetworkMessageType.HANDSHAKE, HandleClientHandshake }
     };
@@ -47,7 +56,9 @@ public static class NetworkMessageHandler
     /// </summary>
     public static Dictionary<NetworkMessageType, ClientNetworkMessage> serverMessageHandlers = new Dictionary<NetworkMessageType, ClientNetworkMessage>
     {
+        {NetworkMessageType.SPAWNMESSAGE, HandleServerSpawnMessage },
         {NetworkMessageType.OBJECT_POSITION, HandleServerObjectPosition },
+
         {NetworkMessageType.HANDSHAKE_RESPONSE, HandleServerHandshakeResponse }
     };
 
@@ -95,12 +106,20 @@ public static class NetworkMessageHandler
         // send creation of this gamemanager to all other game managers
     }
 
-        private static void HandleClientStartGame(object recipient, NetworkConnection connection, NetworkMessage networkMessage)
+    private static void HandleClientStartGame(object recipient, NetworkConnection connection, NetworkMessage networkMessage)
     {
         ServerBehaviour server = recipient as ServerBehaviour;
         StartGameMessage message = networkMessage as StartGameMessage;
 
         Debug.Log("Received request to start game");
+    }
+
+    private static void HandleClientSpawnMessage(object recipient, NetworkConnection connection, NetworkMessage networkMessage)
+    {
+        ServerBehaviour server = recipient as ServerBehaviour;
+        SpawnMessage message = networkMessage as SpawnMessage;
+
+        Debug.Log($"Received message to spawn an object: {message.objectType}, with id {message.networkId}");
     }
 
     private static void HandleClientObjectPosition(object recipient, NetworkConnection connection, NetworkMessage networkMessage) // handle object position message sent by client, received by server
@@ -135,6 +154,15 @@ public static class NetworkMessageHandler
         HandshakeResponseMessage response = networkMessage as HandshakeResponseMessage;
 
         Debug.Log("Received handshake response");
+    }
+
+
+    private static void HandleServerSpawnMessage(object recipient, NetworkMessage networkMessage)
+    {
+        ClientBehaviour server = recipient as ClientBehaviour;
+        SpawnMessage message = networkMessage as SpawnMessage;
+
+        Debug.Log($"Received message to spawn an object: {message.objectType}, with id {message.networkId}");
     }
 
     private static void HandleServerObjectPosition(object recipient, NetworkMessage networkMessage) // handle object position message sent by server, received by client
