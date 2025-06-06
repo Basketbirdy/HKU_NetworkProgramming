@@ -5,12 +5,14 @@ public class HandshakeResponseMessage : NetworkMessage
 {
     public override NetworkMessageType Type => NetworkMessageType.HANDSHAKE_RESPONSE;
 
-    public uint networkId;
+    public string message = "";
+    public uint networkId = 0;
 
     public override void Encode(ref DataStreamWriter writer)
     {
         base.Encode(ref writer);
-
+        
+        writer.WriteFixedString128(message);
         writer.WriteUInt(networkId);
     }
 
@@ -18,6 +20,7 @@ public class HandshakeResponseMessage : NetworkMessage
     {
         base.Decode(ref reader);
 
+        message = reader.ReadFixedString128().ToString();
         networkId = reader.ReadUInt();
     }
 }

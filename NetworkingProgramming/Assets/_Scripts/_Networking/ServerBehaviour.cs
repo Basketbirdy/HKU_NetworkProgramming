@@ -10,11 +10,10 @@ public class ServerBehaviour : MonoBehaviour
     public NetworkDriver driver;
     public NativeList<NetworkConnection> connections;
 
-    // server game data (should this be in game manager?)
-    public Dictionary<NetworkConnection, string> playerList = new Dictionary<NetworkConnection, string>();
-    public Dictionary<NetworkConnection, NetworkedPlayer> playerInstances = new Dictionary<NetworkConnection, NetworkedPlayer>();
+    public Dictionary<NetworkConnection, int> nameList = new Dictionary<NetworkConnection, int>();
+    public Dictionary<NetworkConnection, NetworkedGameManager> playerGameManagers = new Dictionary<NetworkConnection, NetworkedGameManager>();
 
-    [SerializeField][Range(1, 4)] private int playerCap = 2;
+    private int playerCap = 2; 
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -151,7 +150,12 @@ public class ServerBehaviour : MonoBehaviour
         }
     }
 
-    // helper functions
+    // helpers
+    public bool CheckJoin()
+    {
+        // do checks to see if a player can join
+        if(playerGameManagers.Count >= playerCap) { return false; }
 
-    public bool ReachedPlayerCap => playerList.Count >= playerCap - 1;
+        return true;
+    }
 }

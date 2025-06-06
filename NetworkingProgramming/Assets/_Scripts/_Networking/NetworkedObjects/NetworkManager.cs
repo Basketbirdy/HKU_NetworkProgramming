@@ -1,11 +1,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public enum ObjectType { GAMEMANAGER, }
 public class NetworkManager : MonoBehaviour
 {
     public static NetworkManager Instance { get; private set; }
     private static uint nextNetworkId = 0;
-    public static uint NextNetworkId => ++nextNetworkId;
+    public static uint NextNetworkId {  get { return nextNetworkId; }}
 
     [SerializeField] private SpawnInfo spawnInfo;
     Dictionary<uint, GameObject> networkedObjects = new Dictionary<uint, GameObject>();
@@ -17,7 +18,7 @@ public class NetworkManager : MonoBehaviour
         else { Destroy(this); }
     }
 
-    public bool Create(NetworkObjectType type, uint id, out GameObject obj)
+    public bool Create(ObjectType type, uint id, out GameObject obj)
     {
         obj = null;
         if(networkedObjects.ContainsKey(id)) { return false; }
@@ -58,4 +59,10 @@ public class NetworkManager : MonoBehaviour
             return false;
         }
     }
+}
+
+public struct SpawnInfo
+{
+    // list should be in the same order as ObjectType enum
+    public List<GameObject> prefabs;
 }
