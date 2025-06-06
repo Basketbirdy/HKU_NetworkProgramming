@@ -23,6 +23,11 @@ public class StartupUIController : MonoBehaviour
             string nickname = AccountManager.Instance.Nickname;
             msg = $"Hi, {nickname}";
         }
+        else if(!AccountManager.Instance.RequiresLogin)
+        {
+            string nickname = "Guest";
+            msg = $"Hi, {nickname}";
+        }
         else
         {
             msg = $"<i>No login found!<i>";

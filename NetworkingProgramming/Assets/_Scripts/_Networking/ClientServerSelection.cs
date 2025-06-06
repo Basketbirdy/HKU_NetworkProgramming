@@ -8,7 +8,6 @@ public class ClientServerSelection : MonoBehaviour
     [SerializeField] private int clientScene;
 
     [Header("Settings")]
-    [SerializeField] private bool requiresLogin = true;
     private IPopup popup_Error;
 
     private void Awake()
@@ -23,17 +22,19 @@ public class ClientServerSelection : MonoBehaviour
 
     public void GoServer()
     {
-        if (!TryServer())
+        if (TryServer())
         {
-            
+            if (!AccountManager.Instance.LoggedIn) { AccountManager.Instance.SetGuest(); }
+            LoadScene(serverScene);
         }
     }
 
     public void GoClient()
     {
-        if (!TryClient())
+        if (TryClient())
         {
-            
+            if (!AccountManager.Instance.LoggedIn) { AccountManager.Instance.SetGuest(); }
+            LoadScene(clientScene);
         }
     }
 
@@ -41,16 +42,12 @@ public class ClientServerSelection : MonoBehaviour
     {
         if (!CheckLogin("host")) { return false; }
 
-        LoadScene(serverScene);
-
         return true;
     }
 
     private bool TryClient()
     {
         if (!CheckLogin("join")) { return false; }
-
-        LoadScene(clientScene);
 
         return true;
     }
@@ -62,7 +59,7 @@ public class ClientServerSelection : MonoBehaviour
 
     private bool CheckLogin(string subject)
     {
-        if (!AccountManager.Instance.LoggedIn && requiresLogin)
+        if (!AccountManager.Instance.LoggedIn && AccountManager.Instance.RequiresLogin)
         {
             popup_Error.Show($"Failed {subject}ing!", $"Not logged in. <br>please login to play");
             return false;

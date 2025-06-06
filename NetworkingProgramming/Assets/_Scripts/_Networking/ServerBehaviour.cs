@@ -9,10 +9,12 @@ public class ServerBehaviour : MonoBehaviour
 {
     public NetworkDriver driver;
     public NativeList<NetworkConnection> connections;
-    private Dictionary<NetworkConnection, int> playerIds = new Dictionary<NetworkConnection, int>();
 
     // server game data (should this be in game manager?)
-    private Dictionary<NetworkConnection, string> playerList = new Dictionary<NetworkConnection, string>();
+    public Dictionary<NetworkConnection, string> playerList = new Dictionary<NetworkConnection, string>();
+    public Dictionary<NetworkConnection, NetworkedPlayer> playerInstances = new Dictionary<NetworkConnection, NetworkedPlayer>();
+
+    [SerializeField][Range(1, 4)] private int playerCap = 2;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -134,4 +136,22 @@ public class ServerBehaviour : MonoBehaviour
             Debug.LogError($"[Server] failed writing network message to all! {result}", this);
         }
     }
+
+    public void SendNetworkMessageOne(NetworkConnection connection, NetworkMessage msg)
+    {
+        int result = driver.BeginSend(connection, out DataStreamWriter writer);
+        if (result == 0)
+        {
+            msg.Encode(ref writer);
+            driver.EndSend(writer);
+        }
+        else
+        {
+            Debug.LogError($"[Server] failed writing network message to all! {result}", this);
+        }
+    }
+
+    // helper functions
+
+    public bool ReachedPlayerCap => playerList.Count >= playerCap - 1;
 }

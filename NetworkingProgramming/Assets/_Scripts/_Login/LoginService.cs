@@ -49,6 +49,12 @@ public static class LoginService
 
 public class UserData
 {
+    public UserData(string nickname)
+    {
+        user_id = -1;
+        this.nickname = nickname;
+    }
+
     // TODO - recreate database columns
     public int user_id;
     public string nickname;

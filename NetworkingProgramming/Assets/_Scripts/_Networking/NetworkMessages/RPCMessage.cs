@@ -67,7 +67,7 @@ public class RPCMessage : NetworkMessage
         methodName = reader.ReadFixedString128().ToString();
 
         GameObject obj;
-        if(NetworkManager.instance.Get(networkId, out obj))
+        if(NetworkManager.Instance.Get(networkId, out obj))
         {
             target = obj.GetComponent<NetworkedBehaviour>();
             methodInfo = target.GetType().GetMethod(methodName);

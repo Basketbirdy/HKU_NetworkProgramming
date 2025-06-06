@@ -4,6 +4,7 @@ using System.Collections.Generic;
 public enum NetworkObjectType 
 {
     // !!! - Needs to be in same order as prefabs list in SpawnInfo
+    PLAYER = 0,
 }
 
 [CreateAssetMenu(menuName = "Networking/SpawnInfo")]

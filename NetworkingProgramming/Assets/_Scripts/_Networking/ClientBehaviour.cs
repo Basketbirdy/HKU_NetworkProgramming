@@ -46,7 +46,10 @@ public class ClientBehaviour : MonoBehaviour
             {
                 Debug.Log("We are now connected to the server");
 
-                NetworkMessage message = new ObjectPositionMessage { objectId = 1, position = Vector3.one };
+                HandshakeMessage message = new HandshakeMessage()
+                {
+                    nickname = AccountManager.Instance.Nickname
+                };
                 SendNetworkMessage(message);
 
                 // TODO - get player Id

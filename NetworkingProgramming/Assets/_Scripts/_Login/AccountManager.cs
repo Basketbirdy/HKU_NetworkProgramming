@@ -9,6 +9,10 @@ public class AccountManager : MonoBehaviour
     public string Nickname => userData.nickname;
     public bool LoggedIn => userData != null;
 
+    [Header("Settings")]
+    [SerializeField] private bool requiresLogin = true;
+    public bool RequiresLogin => requiresLogin;
+
     private UserData userData;
 
     private void Awake()
@@ -20,7 +24,15 @@ public class AccountManager : MonoBehaviour
         }
 
         Instance = this;
+        SetGuest();
+
         DontDestroyOnLoad(gameObject);
+    }
+
+    public void SetGuest()
+    {
+        UserData guestData = new UserData("Guest");
+        this.userData = guestData;
     }
 
     public void SetAccount(UserData userData)
