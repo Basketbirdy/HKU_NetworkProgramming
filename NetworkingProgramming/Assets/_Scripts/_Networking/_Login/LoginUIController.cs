@@ -21,22 +21,22 @@ public class LoginUIController : MonoBehaviour
     [SerializeField] private Button signin_Confirm;
 
     [Header("Error")]
-    private IPopup error_Popup;
+    private IPopup popup;
 
     private void Awake()
     {
-        error_Popup = GetComponentInChildren<IPopup>();
-        if(error_Popup == null) { Debug.LogError($"Missing IPopup!"); }
+        popup = GetComponentInChildren<IPopup>();
+        if(popup == null) { Debug.LogError($"Missing IPopup!"); }
     }
 
     private void Start()
     {
-        error_Popup.Close();
+        popup.Close();
     }
 
-    public void ShowError(string header, string message)
+    public void ShowPopup(string header, string message)
     {
-        error_Popup.Show(header, message);
+        popup.Show(header, message);
     }
 
     public void TryLogin()
@@ -51,18 +51,29 @@ public class LoginUIController : MonoBehaviour
         if(email == string.Empty || password == string.Empty) 
         { 
             Debug.Log($"[Login] missing credentials!"); 
-            ShowError($"Failed login!", $"Could not log in. <br>missing credentials");
+            ShowPopup($"Failed login!", $"Could not log in. <br>missing credentials");
             return; 
         }
 
         Debug.Log($"[Login] Attempting login! {email}, {password}");
         if (await LoginService.TryLogin(email, password) == false)
         {
-            ShowError($"Failed login!", $"Could not log in. <br>Please check the inserted credentials");
+            ShowPopup($"Failed login!", $"Could not log in. <br>Please check the inserted credentials");
         }
         else
         {
             GoStartup();
+        }
+    }
+    public void TryLogout()
+    {
+        if (!LoginService.TryLogout())
+        {
+            ShowPopup($"Failed logout!", $"Can not log out when no one is logged in");
+        }
+        else
+        {
+            ShowPopup($"Logged out!", "");
         }
     }
 
@@ -79,14 +90,14 @@ public class LoginUIController : MonoBehaviour
         if(email == string.Empty || password == string.Empty || nickname == string.Empty) 
         { 
             Debug.Log($"[Signin] missing credentials!");
-            ShowError($"Failed signin!", $"Could not sign in. <br>missing credentials");
+            ShowPopup($"Failed signin!", $"Could not sign in. <br>missing credentials");
             return; 
         }
             
         Debug.Log($"[Signin] Attempting signin! {email}, {nickname}, {password}");
         if (await LoginService.TrySignin(signin_EmailField.text, signin_NicknameField.text, signin_PasswordField.text) == false)
         {
-            ShowError($"Failed signin!", $"Could not sign in. <br>Please check the inserted credentials");
+            ShowPopup($"Failed signin!", $"Could not sign in. <br>Please check the inserted credentials");
         }
         else
         {

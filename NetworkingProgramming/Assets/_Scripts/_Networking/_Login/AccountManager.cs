@@ -13,7 +13,8 @@ public class AccountManager : MonoBehaviour
     [SerializeField] private bool requiresLogin = true;
     public bool RequiresLogin => requiresLogin;
 
-    private UserData userData;
+    [Header("Current acount")]
+    [SerializeField] private UserData userData;
 
     private void Awake()
     {

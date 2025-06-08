@@ -49,8 +49,17 @@ public static class LoginService
         AccountManager.Instance.SetAccount(results);
         return true;
     }
+
+    public static bool TryLogout()
+    {
+        if (AccountManager.Instance.User_Id == -1) { return false; }
+
+        AccountManager.Instance.ClearAccount();
+        return true;
+    }
 }
 
+[System.Serializable]
 public class UserData
 {
     public UserData(string nickname)
@@ -63,5 +72,5 @@ public class UserData
     public string email;
     public string nickname;
     public string password;
-    public string dob;  // date of birth
+    public string geboortedatum;  // date of birth
 }

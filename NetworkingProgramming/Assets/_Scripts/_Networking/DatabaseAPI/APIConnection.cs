@@ -13,6 +13,7 @@ public static class APIConnection
 
     public static string sessionId;
 
+    // check if there is a session, if not create one depending on createIfNull parameter
     public static async Task<bool> CheckSession(bool createIfNull, int serverId = 1, string serverPw = "password1")
     {
         Debug.Log($"[APIConnection] checking session! {serverId}, {serverPw}, sessionId: {sessionId}");
