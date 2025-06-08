@@ -1,4 +1,5 @@
 using UnityEngine;
+using Unity.Networking.Transport;
 
 public enum GameState { LOBBY, PLAYING }
 public enum SubGameState { ACTIVE, INACTIVE }
@@ -23,12 +24,17 @@ public class GameManager : MonoBehaviour
 
     private void OnEnable()
     {
-        EventHandler<int>.AddListener(GlobalEvents.PLAYER_JOINED, OnPlayerJoined);   
+        EventHandler<string>.AddListener(GlobalEvents.PLAYER_JOINED, OnPlayerJoined);   
     }
 
     private void OnDisable()
     {
-        EventHandler<int>.RemoveListener(GlobalEvents.PLAYER_JOINED, OnPlayerJoined);   
+        EventHandler<string>.RemoveListener(GlobalEvents.PLAYER_JOINED, OnPlayerJoined);   
+    }
+
+    private void Awake()
+    {
+        server = FindAnyObjectByType<ServerBehaviour>();
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -48,12 +54,12 @@ public class GameManager : MonoBehaviour
         // send message to all connected clients to start the game
     }
 
-    private void OnPlayerJoined(int count)
-    {
-        // display player joined notification
-        if(count >= minimumPlayers)
+    private void OnPlayerJoined(string name)
+    {   
+        if(server.playerNames.Count >= minimumPlayers)
         {
             // enable start game ui
+            EventHandler.InvokeEvent("PlayerMinimumReached");
         }
     }
 }

@@ -189,7 +189,7 @@ public static class NetworkMessageHandler
         }
 
         // Send player joined event, pass in amount of players connected
-        EventHandler<int>.InvokeEvent(GlobalEvents.PLAYER_JOINED, server.playerNames.Count);
+        EventHandler<NetworkConnection>.InvokeEvent(GlobalEvents.PLAYER_JOINED, connection);
     }
     private static void HandleClientStartGame(object recipient, NetworkConnection connection, NetworkMessage networkMessage)
     {

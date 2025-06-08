@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class NetworkedPlayer : NetworkedBehaviour
 {
+    public string nickname;
+
     protected override void Start()
     {
         base.Start();
