@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &4535902740676309894
+--- !u!1 &5224297384531054443
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,46 +8,42 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3192772457726427273}
-  - component: {fileID: 8586524136803404821}
+  - component: {fileID: 3344010525266429228}
+  - component: {fileID: 7775370090730878590}
   m_Layer: 0
-  m_Name: m_AccountManager
+  m_Name: NetworkedPlayer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &3192772457726427273
+--- !u!4 &3344010525266429228
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4535902740676309894}
+  m_GameObject: {fileID: 5224297384531054443}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 6.65, y: 0.49, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &8586524136803404821
+--- !u!114 &7775370090730878590
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4535902740676309894}
+  m_GameObject: {fileID: 5224297384531054443}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 92896225ec4094c4586b008c3baa0229, type: 3}
+  m_Script: {fileID: 11500000, guid: c5c3dcfc3e3cfaf4c9bca5eb92fb7f0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  requiresLogin: 0
-  userData:
-    id: -1
-    email: 
-    nickname: Guest
-    password: 
-    geboortedatum: 
+  networkId: 0
+  isLocal: 0
+  isServer: 0

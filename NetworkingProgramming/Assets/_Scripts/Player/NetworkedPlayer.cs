@@ -3,10 +3,6 @@ using UnityEngine;
 
 public class NetworkedPlayer : NetworkedBehaviour
 {
-    private Deck deck;
-    private CardStack discardPile;
-    private CardStack hand;
-
     protected override void Start()
     {
         base.Start();
@@ -22,8 +18,10 @@ public class NetworkedPlayer : NetworkedBehaviour
         }
     }
 
-    private void Update()
+    protected void Update()
     {
+        base.Update();
+
         if (isLocal)
         {
 

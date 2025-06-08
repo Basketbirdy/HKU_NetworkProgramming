@@ -8,16 +8,16 @@ public class ClientServerSelection : MonoBehaviour
     [SerializeField] private int clientScene;
 
     [Header("Settings")]
-    private IPopup popup_Error;
+    private IPopup popup;
 
     private void Awake()
     {
-        popup_Error = GetComponentInChildren<IPopup>();
+        popup = GetComponentInChildren<IPopup>();
     }
 
     private void Start()
     {
-        popup_Error.Close();
+        popup.Close();
     }
 
     public void GoServer()
@@ -61,7 +61,7 @@ public class ClientServerSelection : MonoBehaviour
     {
         if (!AccountManager.Instance.LoggedIn && AccountManager.Instance.RequiresLogin)
         {
-            popup_Error.Show($"Failed {subject}ing!", $"Not logged in. <br>please login to play");
+            popup.Show($"Failed {subject}ing!", $"Not logged in. <br>please login to play");
             return false;
         }
         return true;
