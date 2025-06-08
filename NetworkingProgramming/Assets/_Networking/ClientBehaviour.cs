@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data;
 using Unity.Collections;
 using Unity.Networking.Transport;
 using UnityEditor.MemoryProfiler;
@@ -15,7 +16,8 @@ public class ClientBehaviour : MonoBehaviour
     {
         driver = NetworkDriver.Create();
 
-        var endpoint = NetworkEndpoint.LoopbackIpv4.WithPort(7777);
+        var endpoint = NetworkEndpoint.Parse("192.168.178.63", 9000, NetworkFamily.Ipv4);
+        endpoint.Port = 1511;
         connection = driver.Connect(endpoint);
     }
 

@@ -21,8 +21,9 @@ public class ServerBehaviour : MonoBehaviour
         driver = NetworkDriver.Create();
         connections = new NativeList<NetworkConnection>(16, Allocator.Persistent);
 
-        var endpoint = NetworkEndpoint.AnyIpv4.WithPort(7777);
-        if(driver.Bind(endpoint) != 0)
+        var endpoint = NetworkEndpoint.AnyIpv4; // Accepts connections on any IPv4 address
+        endpoint.Port = 1511;
+        if (driver.Bind(endpoint) != 0)
         {
             Debug.LogError("Failed to bind to port 7777");
             return;
