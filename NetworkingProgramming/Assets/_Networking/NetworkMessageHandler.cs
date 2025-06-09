@@ -21,6 +21,7 @@ public enum NetworkMessageType
     HANDSHAKE,
     HANDSHAKE_RESPONSE,
 
+    GAME_READYTOSTART,
     GAME_START,
 }
 

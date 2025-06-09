@@ -124,6 +124,12 @@ public class ServerBehaviour : MonoBehaviour
             }
         }
     }
+
+    //public void SendMessageHost(NetworkMessage msg)
+    //{
+    //    EventHandler<NetworkMessage>.InvokeEvent(GlobalEvents.SERVER_MESSAGE, msg);
+    //}
+
     public void SendNetworkMessageOne(uint id, NetworkMessage msg) 
     {
         var connection = connections[(int)id];
@@ -183,6 +189,7 @@ public class ServerBehaviour : MonoBehaviour
         {
             Debug.LogError("Could not spawn server manager");
         }
+
     }
 
     public void Disconnect(NetworkConnection connection)

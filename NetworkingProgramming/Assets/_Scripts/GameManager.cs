@@ -58,8 +58,12 @@ public class GameManager : MonoBehaviour
     {   
         if(server.playerNames.Count >= minimumPlayers)
         {
-            // enable start game ui
-            EventHandler.InvokeEvent("PlayerMinimumReached");
+            // enable start game button
         }
+    }
+
+    private void StartGame()
+    {
+
     }
 }
