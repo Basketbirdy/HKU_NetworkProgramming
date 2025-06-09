@@ -7,7 +7,9 @@ public class AccountManager : MonoBehaviour
     [Header("Account data")]
     public int User_Id => userData.id;
     public string Nickname => userData.nickname;
-    public bool LoggedIn => userData != null;
+    public string Email => userData.email;
+    public string DateOfBirth => userData.geboortedatum;
+    public bool LoggedIn => userData.id != -1 && userData != null;
 
     [Header("Settings")]
     [SerializeField] private bool requiresLogin = true;
@@ -41,8 +43,9 @@ public class AccountManager : MonoBehaviour
         this.userData = userData;
     }
 
-    public void ClearAccount()
+    public void ClearAccount(bool resetToGuest = true)
     {
         userData = null;
+        if (resetToGuest) { SetGuest(); }
     }
 }

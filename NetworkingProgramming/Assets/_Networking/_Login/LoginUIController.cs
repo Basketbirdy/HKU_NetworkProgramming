@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Threading.Tasks;
+using System.Text;
 
 public class LoginUIController : MonoBehaviour
 {
@@ -18,7 +19,12 @@ public class LoginUIController : MonoBehaviour
     [SerializeField] private TMP_InputField signin_EmailField;
     [SerializeField] private TMP_InputField signin_NicknameField;
     [SerializeField] private TMP_InputField signin_PasswordField;
+    [SerializeField] private TMP_InputField signin_dayField, signin_monthField, signin_yearField;
     [SerializeField] private Button signin_Confirm;
+
+    [Header("Information")]
+    [SerializeField] private TextMeshProUGUI accountInfoHeaders;
+    [SerializeField] private TextMeshProUGUI accountInfoData;
 
     [Header("Error")]
     private IPopup popup;
@@ -32,6 +38,8 @@ public class LoginUIController : MonoBehaviour
     private void Start()
     {
         popup.Close();
+
+        PopulateAccountInformation();
     }
 
     public void ShowPopup(string header, string message)
@@ -41,14 +49,19 @@ public class LoginUIController : MonoBehaviour
 
     public void TryLogin()
     {
-        _ = Login();    // _ variable name, means it is ignored
+        if (AccountManager.Instance.LoggedIn)
+        {
+            ShowPopup("Failed login!", "This client is already logged in to another account. <br>If you want to switch, log out first");
+            return;
+        }
+        Login();    // _ variable name, means it is ignored
     }
-    private async Task Login()
+    private async void Login()
     {
         string email = login_EmailField.text;
         string password = login_PasswordField.text;
 
-        if(email == string.Empty || password == string.Empty) 
+        if(string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password)) 
         { 
             Debug.Log($"[Login] missing credentials!"); 
             ShowPopup($"Failed login!", $"Could not log in. <br>missing credentials");
@@ -62,32 +75,53 @@ public class LoginUIController : MonoBehaviour
         }
         else
         {
-            GoStartup();
+            ShowPopup($"Welcome back {AccountManager.Instance.Nickname}!", $"You successfully logged in with <br>{email}");
+            PopulateAccountInformation();
+            ClearInputFields();
         }
     }
+
     public void TryLogout()
     {
-        if (!LoginService.TryLogout())
+        Logout();
+    }
+
+    private async void Logout()
+    {
+        if (await LoginService.TryLogout() == false)
         {
             ShowPopup($"Failed logout!", $"Can not log out when no one is logged in");
         }
         else
         {
             ShowPopup($"Logged out!", "");
+            PopulateAccountInformation();
         }
     }
 
     public void TrySignin()
     {
+        if (AccountManager.Instance.LoggedIn)
+        {
+            ShowPopup("Failed signin!", "This client is already logged in to another account. <br>If you want to switch, log out first");
+            return;
+        }
         _ = Signin();   // _ variable name, means it is ignored
     }
     private async Task Signin()
     {
         string email = signin_EmailField.text;
         string nickname = signin_NicknameField.text;
+
+        string day = signin_dayField.text;
+        string month = signin_monthField.text;
+        string year = signin_yearField.text;
+        string dateOfBirth = year + "-" + month + "-" + day;        
+
         string password = signin_PasswordField.text;
 
-        if(email == string.Empty || password == string.Empty || nickname == string.Empty) 
+
+        if(string.IsNullOrEmpty(email) || string.IsNullOrEmpty(nickname) || string.IsNullOrEmpty(day) || string.IsNullOrEmpty(month) || string.IsNullOrEmpty(year) || string.IsNullOrEmpty(password)) 
         { 
             Debug.Log($"[Signin] missing credentials!");
             ShowPopup($"Failed signin!", $"Could not sign in. <br>missing credentials");
@@ -95,18 +129,65 @@ public class LoginUIController : MonoBehaviour
         }
             
         Debug.Log($"[Signin] Attempting signin! {email}, {nickname}, {password}");
-        if (await LoginService.TrySignin(signin_EmailField.text, signin_NicknameField.text, signin_PasswordField.text) == false)
+        if (await LoginService.TrySignin(email, nickname, dateOfBirth, password) == false)
         {
             ShowPopup($"Failed signin!", $"Could not sign in. <br>Please check the inserted credentials");
         }
         else
         {
-            GoStartup();
+            ShowPopup($"Welcome {nickname}!", $"You successfully signed in with <br>{email}");
+            PopulateAccountInformation();
+            ClearInputFields();
         }
     }
 
     public void GoStartup()
     {
         SceneManager.LoadScene(startupScene);
+    }
+
+    private void ClearInputFields()
+    {
+        login_EmailField.text = string.Empty;
+        login_PasswordField.text = string.Empty;
+
+        signin_EmailField.text = string.Empty;
+        signin_NicknameField.text = string.Empty;
+        signin_PasswordField.text = string.Empty;
+
+        signin_dayField.text = string.Empty;
+        signin_monthField.text = string.Empty;
+        signin_yearField.text = string.Empty;
+    }
+
+    private void PopulateAccountInformation()
+    {
+        StringBuilder builder = new StringBuilder();
+
+        builder.Append(AccountManager.Instance.Nickname);
+        builder.Append("<br>");
+        builder.Append(AccountManager.Instance.User_Id);
+        builder.Append("<br>");
+        builder.Append(AccountManager.Instance.Email);
+        builder.Append("<br>");
+        builder.Append(AccountManager.Instance.DateOfBirth);
+
+        string info = builder.ToString();
+        builder.Clear();
+
+        accountInfoData.text = info;
+
+        builder.Append("Nickname: "); 
+        builder.Append("<br>");
+        builder.Append("Id: "); 
+        builder.Append("<br>");
+        builder.Append("Email: "); 
+        builder.Append("<br>");
+        builder.Append("Date of birth: ");
+
+        string headers = builder.ToString();
+        builder = null;
+
+        accountInfoHeaders.text = headers;
     }
 }
