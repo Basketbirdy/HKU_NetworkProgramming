@@ -63,15 +63,16 @@ public class LoginUIController : MonoBehaviour
 
         if(string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password)) 
         { 
-            Debug.Log($"[Login] missing credentials!"); 
-            ShowPopup($"Failed login!", $"Could not log in. <br>missing credentials");
+            Debug.Log($"[Login] missing credentials!");
+            ShowPopup(APIConnection.responseCodeHeader["04"], APIConnection.responseCodeMessage["04"]);
             return; 
         }
 
         Debug.Log($"[Login] Attempting login! {email}, {password}");
-        if (await LoginService.TryLogin(email, password) == false)
+        string response = await LoginService.TryLogin(email, password);
+        if (APIConnection.CheckResponseForErrorCode(response) || string.IsNullOrEmpty(response))
         {
-            ShowPopup($"Failed login!", $"Could not log in. <br>Please check the inserted credentials");
+            ShowPopup(APIConnection.responseCodeHeader[response], APIConnection.responseCodeMessage[response]);
         }
         else
         {
@@ -88,9 +89,10 @@ public class LoginUIController : MonoBehaviour
 
     private async void Logout()
     {
-        if (await LoginService.TryLogout() == false)
+        string response = await LoginService.TryLogout();
+        if (APIConnection.CheckResponseForErrorCode(response) || string.IsNullOrEmpty(response))
         {
-            ShowPopup($"Failed logout!", $"Can not log out when no one is logged in");
+            ShowPopup(APIConnection.responseCodeHeader[response], APIConnection.responseCodeMessage[response]);
         }
         else
         {
@@ -129,9 +131,10 @@ public class LoginUIController : MonoBehaviour
         }
             
         Debug.Log($"[Signin] Attempting signin! {email}, {nickname}, {password}");
-        if (await LoginService.TrySignin(email, nickname, dateOfBirth, password) == false)
+        string response = await LoginService.TrySignin(email, nickname, dateOfBirth, password);
+        if (APIConnection.CheckResponseForErrorCode(response) || string.IsNullOrEmpty(response))
         {
-            ShowPopup($"Failed signin!", $"Could not sign in. <br>Please check the inserted credentials");
+            ShowPopup(APIConnection.responseCodeHeader[response], APIConnection.responseCodeMessage[response]);
         }
         else
         {

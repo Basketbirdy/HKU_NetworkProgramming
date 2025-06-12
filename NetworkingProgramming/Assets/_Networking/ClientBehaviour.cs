@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
-using System.Data;
 using Unity.Collections;
 using Unity.Networking.Transport;
-using UnityEditor.MemoryProfiler;
 using UnityEngine;
 
 public class ClientBehaviour : MonoBehaviour

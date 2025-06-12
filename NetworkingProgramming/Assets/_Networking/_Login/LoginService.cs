@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public static class LoginService
 {
-    public static async Task<bool> TryLogin(string email, string password)
+    public static async Task<string> TryLogin(string email, string password)
     {
         // check if there is a session, if not create one
         await APIConnection.CheckSession(true);
@@ -15,15 +15,19 @@ public static class LoginService
         string url = APIConnection.BuildUrl("user_login", $"sessid={APIConnection.sessionId}", $"em={email}", $"pw={password}");
         string json = await APIConnection.MakeWebRequest(url);
         Debug.Log($"Received response: {json}");
-        if(string.IsNullOrEmpty(json)) { return false; }
+
+        if (APIConnection.CheckResponseForErrorCode(json))
+        {
+            return json;
+        }
 
         // handle received data (response)
         // assuming the response is in JSON format, parse the JSON into UserData class
         HandleLogin(json);
-        return true;
+        return json;
     }
 
-    public static async Task<bool> TrySignin(string email, string nickname, string dateOfBirth, string password)
+    public static async Task<string> TrySignin(string email, string nickname, string dateOfBirth, string password)
     {
         await APIConnection.CheckSession(true);
         Debug.Log($"[LoginService] completed session check! session: {APIConnection.sessionId}");
@@ -32,13 +36,16 @@ public static class LoginService
 
         // construct user_insert url
         string url = APIConnection.BuildUrl("user_insert", $"sessid={APIConnection.sessionId}", $"em={email}", $"nn={nickname}", $"dob={dateOfBirth}", $"pw={password}");
-        string result = await APIConnection.MakeWebRequest(url, "0", "1");
-        Debug.Log($"Received response: {result}");
-        if (string.IsNullOrEmpty(result)) { return false; }
+        string result = await APIConnection.MakeWebRequest(url, "1");
+
+        if (APIConnection.CheckResponseForErrorCode(result))
+        {
+            return result;
+        }
 
         // if successful registration log in
         await TryLogin(email, password);
-        return true;
+        return result;
     }
 
     private static bool HandleLogin(string json)
@@ -51,20 +58,24 @@ public static class LoginService
         return true;
     }
 
-    public static async Task<bool> TryLogout()
+    public static async Task<string> TryLogout()
     {
-        if (AccountManager.Instance.User_Id == -1) { return false; }    // if noone is logged in, skip everything
+        if (AccountManager.Instance.User_Id == -1) { return string.Empty; }    // if noone is logged in, skip everything
 
         // check if there is a session, if not create one
         await APIConnection.CheckSession(false);
         Debug.Log($"[LoginService] completed session check! session: {APIConnection.sessionId}");
 
         string url = APIConnection.BuildUrl("user_logout", $"sessid={APIConnection.sessionId}");
-        string result = await APIConnection.MakeWebRequest(url, "0", "1");
-        if(string.IsNullOrEmpty(result)) { return false; }
+        string result = await APIConnection.MakeWebRequest(url, "1");
+
+        if (APIConnection.CheckResponseForErrorCode(result))
+        {
+            return result;
+        }
 
         AccountManager.Instance.ClearAccount();
-        return true;
+        return result;
     }
 }
 

@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -18,6 +20,34 @@ public static class APIConnection
     public static string serverPassword = "Password1";
 
     public static string sessionId;
+    public static Dictionary<string, string> responseCodeHeader = new Dictionary<string, string>()
+    {
+        {"01", "Communication error"},
+        
+        {"02", "No query results"},
+
+        {"03", "Invalid input"},
+        {"04", "Missing input"},
+
+        {"05", "No session found"},
+        {"06", "No login found"},
+
+        {"07", "Email not available"},
+    };
+    public static Dictionary<string, string> responseCodeMessage = new Dictionary<string, string>()
+    {
+        {"01", "Failed to create a connection"},
+
+        {"02", ""},
+
+        {"03", "Input is not valid"},
+        {"04", "Missing input, please check if you have filled out all the necessary credentials"},
+
+        {"05", ""},
+        {"06", "Not logged in to any account. Please log in or sign up before trying again."},
+
+        {"07", "Email is already in use. Please try again with a different email"},
+    };
 
     // check if there is a session, if not create one depending on createIfNull parameter
     public static async Task<bool> CheckSession(bool createIfNull, int serverId = 1, string serverPw = "password1")
@@ -79,7 +109,7 @@ public static class APIConnection
     /// <param name="errorResponse"></param>
     /// <param name="targetResponse"></param>
     /// <returns></returns>
-    public static async Task<string> MakeWebRequest(string url, string errorResponse = "0", string targetResponse = "")
+    public static async Task<string> MakeWebRequest(string url, string targetResponse = "")
     {
         // create request
         var req = UnityWebRequest.Get(url);
@@ -87,7 +117,6 @@ public static class APIConnection
         // send the request AND wait untill it finishes
         Debug.Log($"[APIConnection] sending webrequest! {url}");
         await req.SendWebRequest();
-        Debug.Log($"[APIConnection] sent webrequest");
 
         // check if request failed
         if(req.responseCode != 200)
@@ -105,17 +134,16 @@ public static class APIConnection
             if(req.downloadHandler.text != targetResponse) 
             {
                 Debug.Log($"[APIConnection] response text does not equal expected response");
-                response = string.Empty;
+                return response;
             }
         }
 
-        if(response == errorResponse) 
+        if(responseCodeHeader.ContainsKey(response)) 
         {
-            Debug.LogWarning($"[APIConnection] response indicates external error... {response}");
-            response = string.Empty; 
+            Debug.LogWarning($"[APIConnection] response indicates external error... {response}|{responseCodeHeader[response]}. Please check error popup if it exists");
         }
 
-        Debug.Log($"[APIConnection] returning response result now! {response}");
+        //Debug.Log($"[APIConnection] returning response result now! {response}");
         return response;
     }
 
@@ -134,6 +162,45 @@ public static class APIConnection
         Debug.Log($"[APIConnection] url: {url}");
         return url;
     }
+
+    public static bool CheckResponseForErrorCode(string response)
+    {
+        if (string.IsNullOrEmpty(response)){ return false; }
+        if (responseCodeHeader.ContainsKey(response) )
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+}
+
+public struct PHPResult
+{
+    public PHPResult(bool state, string result)
+    {
+        succeeded = state;
+        response = result;
+
+        if (APIConnection.CheckResponseForErrorCode(response))
+        {
+            responseHeader = APIConnection.responseCodeHeader[response];
+            responseMessage = APIConnection.responseCodeMessage[response];
+        }
+        else
+        {
+            responseHeader = null;
+            responseMessage = null;
+        }
+    }
+
+    public bool succeeded;
+    public string response;
+
+    public string responseHeader;
+    public string responseMessage;
 }
 
 //public class Response
