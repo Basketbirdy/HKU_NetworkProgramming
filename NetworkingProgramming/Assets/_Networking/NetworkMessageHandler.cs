@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Collections;
 using Unity.Networking.Transport;
 using UnityEngine;
@@ -21,6 +22,7 @@ public enum NetworkMessageType
     // specific
     HANDSHAKE,
     HANDSHAKE_RESPONSE,
+    PLAYER_JOINED,
 
     GAME_READYTOSTART,
     GAME_START,
@@ -37,7 +39,8 @@ public static class NetworkMessageInfo
         {NetworkMessageType.OBJECT_POSITION, typeof(ObjectPositionMessage) },
 
         {NetworkMessageType.HANDSHAKE, typeof(HandshakeMessage) },
-        {NetworkMessageType.HANDSHAKE_RESPONSE, typeof(HandshakeResponseMessage) }
+        {NetworkMessageType.HANDSHAKE_RESPONSE, typeof(HandshakeResponseMessage) },
+        {NetworkMessageType.PLAYER_JOINED, typeof(PlayerJoinedMessage) }
     };
 }
 
@@ -48,10 +51,14 @@ public static class NetworkMessageHandler
     /// </summary>
     public static Dictionary<NetworkMessageType, ClientNetworkMessage> serverMessageHandlers = new Dictionary<NetworkMessageType, ClientNetworkMessage>
     {
+        {NetworkMessageType.KEEPALIVE, HandleServerKeepAlive },
+
         {NetworkMessageType.SPAWNMESSAGE, HandleServerSpawnMessage },
         {NetworkMessageType.OBJECT_POSITION, HandleServerObjectPosition },
 
-        {NetworkMessageType.HANDSHAKE_RESPONSE, HandleServerHandshakeResponse }
+        {NetworkMessageType.HANDSHAKE_RESPONSE, HandleServerHandshakeResponse },
+
+        {NetworkMessageType.PLAYER_JOINED, HandleServerPlayerJoined },
     };
 
     /// <summary>
@@ -59,7 +66,6 @@ public static class NetworkMessageHandler
     /// </summary>
     public static Dictionary<NetworkMessageType, ServerNetworkMessage> clientMessageHandlers = new Dictionary<NetworkMessageType, ServerNetworkMessage>
     {
-        {NetworkMessageType.KEEPALIVE, HandleClientKeepAlive },
 
         {NetworkMessageType.SPAWNMESSAGE, HandleClientSpawnMessage },
         {NetworkMessageType.OBJECT_POSITION, HandleClientObjectPosition},
@@ -70,13 +76,31 @@ public static class NetworkMessageHandler
 
     // messages received by the CLIENT, sent by the server
     #region Server Messages
+    private static void HandleServerKeepAlive(object recipient, NetworkMessage networkMessage)
+    {
+        ClientBehaviour client = recipient as ClientBehaviour;
+        KeepAliveMessage message = networkMessage as KeepAliveMessage;
 
+        Debug.Log("Received keep alive message");
+    }
     private static void HandleServerHandshakeResponse(object recipient, NetworkMessage networkMessage)
     {
         ClientBehaviour client = recipient as ClientBehaviour;
         HandshakeResponseMessage response = networkMessage as HandshakeResponseMessage;
 
         Debug.Log($"Received handshake response: {response.message}");
+
+        if(response.message == "0")
+        {
+            client.ShutDown();
+        }
+    }
+    private static void HandleServerPlayerJoined(object recipient, NetworkMessage networkMessage)
+    {
+        ClientBehaviour client = recipient as ClientBehaviour;
+        var message = networkMessage as PlayerJoinedMessage;
+
+        Debug.Log($"Received player joined message. {message.name}");
     }
     private static void HandleServerSpawnMessage(object recipient, NetworkMessage networkMessage)
     {
@@ -116,11 +140,6 @@ public static class NetworkMessageHandler
 
     // messages received by the SERVER, sent by the clients
     #region Client Messages
-    private static void HandleClientKeepAlive(object recipient, NetworkConnection connection, NetworkMessage networkMessage)
-    {
-        ClientBehaviour client = recipient as ClientBehaviour;
-        KeepAliveMessage message = networkMessage as KeepAliveMessage;
-    }
     private static void HandleClientHandshake(object recipient, NetworkConnection connection, NetworkMessage networkMessage) // handshake is client trying to join the server
     {
         ServerBehaviour server = recipient as ServerBehaviour;
@@ -153,13 +172,14 @@ public static class NetworkMessageHandler
         uint networkId = 0;
         if (NetworkManager.Instance.Create(NetworkObjectType.PLAYER, NetworkManager.NextNetworkId, out player))
         {
-            NetworkedPlayer gameManagerInstance = player.GetComponent<NetworkedPlayer>();
-            gameManagerInstance.isLocal = false;
-            gameManagerInstance.isServer = true;
-            gameManagerInstance.nickname = message.name;
-            networkId = gameManagerInstance.networkId;
+            NetworkedPlayer playerInstance = player.GetComponent<NetworkedPlayer>();
+            playerInstance.isLocal = false;
+            playerInstance.isServer = true;
+            playerInstance.nickname = message.name;
+            playerInstance.playerId = server.playerNames.Count;
+            networkId = playerInstance.networkId;
 
-            server.playerInstances.Add(connection, gameManagerInstance);
+            server.playerInstances.Add(connection, playerInstance);
 
             HandshakeResponseMessage response = new HandshakeResponseMessage()
             {
@@ -188,7 +208,7 @@ public static class NetworkMessageHandler
             server.SendNetworkMessageOne(connection, spawnMessage);
         }
 
-        // send creation of this gamemanager to all other game managers
+        // send creation of this player to all other players
         if (networkId != 0)
         {
             SpawnMessage spawnMessage = new SpawnMessage()
@@ -199,9 +219,6 @@ public static class NetworkMessageHandler
 
             server.SendNetworkMessageAll(spawnMessage);
         }
-
-        // Send player joined event, pass in amount of players connected
-        EventHandler<NetworkConnection>.InvokeEvent(GlobalEvents.PLAYER_JOINED, connection);
     }
     private static void HandleClientStartGame(object recipient, NetworkConnection connection, NetworkMessage networkMessage)
     {

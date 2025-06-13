@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a689d91966dfb46499fb63f130d9b905, type: 3}
-  m_Name: 2Local_1Editor
+  m_Name: 1Local
   m_EditorClassIdentifier: 
   m_Description: 
-  m_EnableEditors: 1
+  m_EnableEditors: 0
   m_MainEditorInstance:
     Name: Main Editor
     <CorrespondingNodeId>k__BackingField: Main Editor|0_run
@@ -24,21 +24,11 @@ MonoBehaviour:
     m_InitialScene: {fileID: 0}
   m_EditorInstances: []
   m_LocalInstances:
-  - Name: Server
-    <CorrespondingNodeId>k__BackingField: Server - Run
+  - Name: Instance
+    <CorrespondingNodeId>k__BackingField: Instance - Run
     m_Nodes:
-    - Server - Build
-    - Server - Run
-    m_BuildProfile: {fileID: 11400000, guid: 89bb4f54276e9304a9f22996d6fcf03e, type: 2}
-    advancedConfiguration:
-      m_StreamLogsToMainEditor: 1
-      m_LogsColor: {r: 0.3643, g: 0.581, b: 0.8679, a: 1}
-      m_Arguments: -screen-fullscreen 0 -screen-width 1024 -screen-height 720
-  - Name: Client
-    <CorrespondingNodeId>k__BackingField: Client - Run
-    m_Nodes:
-    - Client - Build
-    - Client - Run
+    - Instance - Build
+    - Instance - Run
     m_BuildProfile: {fileID: 11400000, guid: 89bb4f54276e9304a9f22996d6fcf03e, type: 2}
     advancedConfiguration:
       m_StreamLogsToMainEditor: 1

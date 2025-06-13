@@ -5,7 +5,11 @@ public enum GameState { LOBBY, PLAYING }
 public enum SubGameState { ACTIVE, INACTIVE }
 public class GameManager : MonoBehaviour
 {
+    [SerializeField] private bool isClient;
+    [SerializeField] private bool isServer;
+
     private ServerBehaviour server;
+    private ClientBehaviour client;
 
     [Header("State")]
     [SerializeField] private GameState gameState = GameState.LOBBY;
@@ -24,17 +28,46 @@ public class GameManager : MonoBehaviour
 
     private void OnEnable()
     {
-        EventHandler<string>.AddListener(GlobalEvents.PLAYER_JOINED, OnPlayerJoined);   
+        EventHandler<NetworkMessage>.AddListener(GlobalEvents.PLAYER_JOINED, OnPlayerJoined);
+
+        if (isClient)
+        {
+
+        }
+
+        if (isServer)
+        {
+            
+
+        }
     }
 
     private void OnDisable()
     {
-        EventHandler<string>.RemoveListener(GlobalEvents.PLAYER_JOINED, OnPlayerJoined);   
+        EventHandler<NetworkMessage>.RemoveListener(GlobalEvents.PLAYER_JOINED, OnPlayerJoined);
+
+        if (isClient)
+        {
+
+        }
+
+        if (isServer)
+        {
+        }
     }
 
     private void Awake()
     {
-        server = FindAnyObjectByType<ServerBehaviour>();
+        if (isClient)
+        {
+            client = FindAnyObjectByType<ClientBehaviour>();
+        }
+
+        if (isServer)
+        {
+            server = FindAnyObjectByType<ServerBehaviour>();
+            client = FindAnyObjectByType<ClientBehaviour>();
+        }
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -54,11 +87,22 @@ public class GameManager : MonoBehaviour
         // send message to all connected clients to start the game
     }
 
-    private void OnPlayerJoined(string name)
-    {   
-        if(server.playerNames.Count >= minimumPlayers)
+    private void OnPlayerJoined(NetworkMessage message)
+    {
+        // if network message is not of expected type, return and do nothing
+        if(message.GetType() != typeof(PlayerJoinedMessage)) { return; }
+
+        if (isClient)
         {
-            // enable start game button
+            // update player list with player name
+        }
+
+        if (isServer)
+        {
+            if(server.playerNames.Count >= minimumPlayers)
+            {
+                // enable start game button
+            }
         }
     }
 

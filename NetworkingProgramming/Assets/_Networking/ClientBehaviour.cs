@@ -40,9 +40,11 @@ public class ClientBehaviour : MonoBehaviour
             ShutDown();
         }
     }
-    private void ShutDown()
+    public void ShutDown()
     {
         driver.Dispose();
+
+        connection.Disconnect(driver);
         connection = default(NetworkConnection);
     }
 

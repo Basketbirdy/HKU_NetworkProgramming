@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Networking.Transport;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class ServerBehaviour : MonoBehaviour
 {
@@ -23,6 +24,9 @@ public class ServerBehaviour : MonoBehaviour
 
     private int playerCap = 2;
     private Action onConnectionDropped;
+
+    [SerializeField] private float keepAliveTickRate = 20f;
+    private float keepAliveTimestamp;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -58,7 +62,7 @@ public class ServerBehaviour : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //KeepAlive();
+        KeepAlive();
 
         driver.ScheduleUpdate().Complete();
 
@@ -94,6 +98,8 @@ public class ServerBehaviour : MonoBehaviour
                     NetworkMessage msg = (NetworkMessage)Activator.CreateInstance(NetworkMessageInfo.typeMap[messageType]);
                     msg.Decode(ref stream);
 
+                    EventHandler<NetworkMessage>.InvokeEvent(GlobalEvents.MESSAGE_RECEIVED, msg);
+
                     if(NetworkMessageHandler.clientMessageHandlers.ContainsKey(messageType))
                     {
                         try
@@ -117,6 +123,15 @@ public class ServerBehaviour : MonoBehaviour
                     break;
                 }
             }
+        }
+    }
+    private void KeepAlive()
+    {
+        if(Time.time - keepAliveTimestamp > keepAliveTickRate)
+        {
+            keepAliveTimestamp = Time.time;
+            var message = new KeepAliveMessage();
+            SendNetworkMessageAll(message);
         }
     }
 
@@ -206,15 +221,28 @@ public class ServerBehaviour : MonoBehaviour
         for(int i = 0; i < connections.Length; i++)
         {
             NetworkConnection conn = connections[i];
-            if(conn == connection)
-            {
-                conn.Disconnect(driver);
-                conn = default;
-            }
-            else
+            if(conn != connection)
             {
                 continue;
             }
+
+            conn.Disconnect(driver);
+
+            playerNames.Remove(conn);
+            playerInstances.Remove(conn);
+            conn = default;
+
+            connections.RemoveAtSwapBack(i);
         }
+    }
+
+    // receive message event
+    public void AddMessageEventListener(Action<NetworkMessage> action)
+    {
+        EventHandler<NetworkMessage>.AddListener(GlobalEvents.SERVER_MESSAGE, action);
+    }
+    public void RemoveMessageEventListener(Action<NetworkMessage> action)
+    {
+        EventHandler<NetworkMessage>.RemoveListener(GlobalEvents.SERVER_MESSAGE, action);
     }
 }
