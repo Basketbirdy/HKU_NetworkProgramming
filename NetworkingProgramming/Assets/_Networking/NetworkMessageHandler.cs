@@ -170,14 +170,17 @@ public static class NetworkMessageHandler
         // spawn server player
         GameObject player = null;
         uint networkId = 0;
+        int playerNumber = 0;
         if (NetworkManager.Instance.Create(NetworkObjectType.PLAYER, NetworkManager.NextNetworkId, out player))
         {
             NetworkedPlayer playerInstance = player.GetComponent<NetworkedPlayer>();
             playerInstance.isLocal = false;
             playerInstance.isServer = true;
             playerInstance.nickname = message.name;
-            playerInstance.playerId = server.playerNames.Count;
+            playerInstance.playerNumber = server.playerNames.Count;
+
             networkId = playerInstance.networkId;
+            playerNumber = playerInstance.playerNumber;
 
             server.playerInstances.Add(connection, playerInstance);
 
@@ -194,7 +197,7 @@ public static class NetworkMessageHandler
             Debug.Log("Could not spawn player");
         }
 
-        // send all existing gamemanager to this manager
+        // send all existing players to this player
         foreach (KeyValuePair<NetworkConnection, NetworkedPlayer> pair in server.playerInstances)
         {
             if (pair.Key == connection) { continue; }
@@ -206,6 +209,13 @@ public static class NetworkMessageHandler
             };
 
             server.SendNetworkMessageOne(connection, spawnMessage);
+
+            // send player joined message to all
+            PlayerJoinedMessage playerJoinedMessage = new PlayerJoinedMessage()
+            {
+                name = message.name,
+                playerNumber = playerNumber,
+            };
         }
 
         // send creation of this player to all other players
@@ -219,6 +229,9 @@ public static class NetworkMessageHandler
 
             server.SendNetworkMessageAll(spawnMessage);
         }
+
+
+        server.SendNetworkMessageAll(playerJoinedMessage);
     }
     private static void HandleClientStartGame(object recipient, NetworkConnection connection, NetworkMessage networkMessage)
     {

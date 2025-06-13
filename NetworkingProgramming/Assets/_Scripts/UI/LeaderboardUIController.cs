@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class LeaderboardUIController : MonoBehaviour
+public class LeaderboardUIController : BaseUIController
 {
     [Header("Scene indices")]
     [SerializeField] private int startupScene = 0;

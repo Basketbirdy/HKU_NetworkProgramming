@@ -4,7 +4,7 @@ using UnityEngine;
 public class NetworkedPlayer : NetworkedBehaviour
 {
     public string nickname;
-    public int playerId;
+    public int playerNumber;
 
     protected override void Start()
     {

@@ -115,6 +115,8 @@ public class ServerBehaviour : MonoBehaviour
                     {
                         Debug.LogError($"[Server] no message type identified!");
                     }
+
+                    EventHandler<NetworkMessage>.InvokeEvent(GlobalEvents.MESSAGE_RECEIVED, msg);
                 }
                 else if(cmd == NetworkEvent.Type.Disconnect)
                 {

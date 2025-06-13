@@ -28,7 +28,7 @@ public class GameManager : MonoBehaviour
 
     private void OnEnable()
     {
-        EventHandler<NetworkMessage>.AddListener(GlobalEvents.PLAYER_JOINED, OnPlayerJoined);
+        EventHandler<NetworkMessage>.AddListener(GlobalEvents.MESSAGE_RECEIVED, OnPlayerJoined);
 
         if (isClient)
         {
@@ -44,11 +44,11 @@ public class GameManager : MonoBehaviour
 
     private void OnDisable()
     {
-        EventHandler<NetworkMessage>.RemoveListener(GlobalEvents.PLAYER_JOINED, OnPlayerJoined);
+        EventHandler<NetworkMessage>.RemoveListener(GlobalEvents.MESSAGE_RECEIVED, OnPlayerJoined);
 
         if (isClient)
         {
-
+            
         }
 
         if (isServer)
@@ -89,12 +89,17 @@ public class GameManager : MonoBehaviour
 
     private void OnPlayerJoined(NetworkMessage message)
     {
+        Debug.Log($"Received Network message in GameManager!, {message.GetType()}");
+
         // if network message is not of expected type, return and do nothing
         if(message.GetType() != typeof(PlayerJoinedMessage)) { return; }
+        PlayerJoinedMessage msg = message as PlayerJoinedMessage;
 
         if (isClient)
         {
             // update player list with player name
+            Debug.Log($"updating list: {msg.playerNumber} with {msg.name}");
+            UIManager.Instance.SetText($"player{msg.playerNumber}Text", msg.name);
         }
 
         if (isServer)

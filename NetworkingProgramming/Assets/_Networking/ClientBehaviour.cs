@@ -96,6 +96,8 @@ public class ClientBehaviour : MonoBehaviour
                     Debug.LogError($"[Server] no message type identified!");
                 }
 
+                EventHandler<NetworkMessage>.InvokeEvent(GlobalEvents.MESSAGE_RECEIVED, msg);
+
                 //uint value = stream.ReadUInt();
                 //Debug.Log($"Got the value {value} back from the server");
 
