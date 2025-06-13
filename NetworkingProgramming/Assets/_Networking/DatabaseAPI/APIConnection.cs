@@ -1,9 +1,6 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -22,6 +19,7 @@ public static class APIConnection
     public static string sessionId;
     public static Dictionary<string, string> responseCodeHeader = new Dictionary<string, string>()
     {
+        {"", "Unknown error"},
         {"01", "Communication error"},
         
         {"02", "No query results"},
@@ -36,6 +34,7 @@ public static class APIConnection
     };
     public static Dictionary<string, string> responseCodeMessage = new Dictionary<string, string>()
     {
+        {"", "response is empty, can not identify error"},
         {"01", "Failed to create a connection"},
 
         {"02", ""},

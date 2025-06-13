@@ -42,16 +42,11 @@ public class LoginUIController : MonoBehaviour
         PopulateAccountInformation();
     }
 
-    public void ShowPopup(string header, string message)
-    {
-        popup.Show(header, message);
-    }
-
     public void TryLogin()
     {
         if (AccountManager.Instance.LoggedIn)
         {
-            ShowPopup("Failed login!", "This client is already logged in to another account. <br>If you want to switch, log out first");
+            popup.Show("Failed login!", "This client is already logged in to another account. <br>If you want to switch, log out first");
             return;
         }
         Login();    // _ variable name, means it is ignored
@@ -64,7 +59,7 @@ public class LoginUIController : MonoBehaviour
         if(string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password)) 
         { 
             Debug.Log($"[Login] missing credentials!");
-            ShowPopup(APIConnection.responseCodeHeader["04"], APIConnection.responseCodeMessage["04"]);
+            popup.Show(APIConnection.responseCodeHeader["04"], APIConnection.responseCodeMessage["04"]);
             return; 
         }
 
@@ -72,11 +67,11 @@ public class LoginUIController : MonoBehaviour
         string response = await LoginService.TryLogin(email, password);
         if (APIConnection.CheckResponseForErrorCode(response) || string.IsNullOrEmpty(response))
         {
-            ShowPopup(APIConnection.responseCodeHeader[response], APIConnection.responseCodeMessage[response]);
+            popup.Show(APIConnection.responseCodeHeader[response], APIConnection.responseCodeMessage[response]);
         }
         else
         {
-            ShowPopup($"Welcome back {AccountManager.Instance.Nickname}!", $"You successfully logged in with <br>{email}");
+            popup.Show($"Welcome back {AccountManager.Instance.Nickname}!", $"You successfully logged in with <br>{email}");
             PopulateAccountInformation();
             ClearInputFields();
         }
@@ -92,11 +87,11 @@ public class LoginUIController : MonoBehaviour
         string response = await LoginService.TryLogout();
         if (APIConnection.CheckResponseForErrorCode(response) || string.IsNullOrEmpty(response))
         {
-            ShowPopup(APIConnection.responseCodeHeader[response], APIConnection.responseCodeMessage[response]);
+            popup.Show(APIConnection.responseCodeHeader[response], APIConnection.responseCodeMessage[response]);
         }
         else
         {
-            ShowPopup($"Logged out!", "");
+            popup.Show($"Logged out!", "");
             PopulateAccountInformation();
         }
     }
@@ -105,7 +100,7 @@ public class LoginUIController : MonoBehaviour
     {
         if (AccountManager.Instance.LoggedIn)
         {
-            ShowPopup("Failed signin!", "This client is already logged in to another account. <br>If you want to switch, log out first");
+            popup.Show("Failed signin!", "This client is already logged in to another account. <br>If you want to switch, log out first");
             return;
         }
         _ = Signin();   // _ variable name, means it is ignored
@@ -126,7 +121,7 @@ public class LoginUIController : MonoBehaviour
         if(string.IsNullOrEmpty(email) || string.IsNullOrEmpty(nickname) || string.IsNullOrEmpty(day) || string.IsNullOrEmpty(month) || string.IsNullOrEmpty(year) || string.IsNullOrEmpty(password)) 
         { 
             Debug.Log($"[Signin] missing credentials!");
-            ShowPopup($"Failed signin!", $"Could not sign in. <br>missing credentials");
+            popup.Show($"Failed signin!", $"Could not sign in. <br>missing credentials");
             return; 
         }
             
@@ -134,11 +129,11 @@ public class LoginUIController : MonoBehaviour
         string response = await LoginService.TrySignin(email, nickname, dateOfBirth, password);
         if (APIConnection.CheckResponseForErrorCode(response) || string.IsNullOrEmpty(response))
         {
-            ShowPopup(APIConnection.responseCodeHeader[response], APIConnection.responseCodeMessage[response]);
+            popup.Show(APIConnection.responseCodeHeader[response], APIConnection.responseCodeMessage[response]);
         }
         else
         {
-            ShowPopup($"Welcome {nickname}!", $"You successfully signed in with <br>{email}");
+            popup.Show($"Welcome {nickname}!", $"You successfully signed in with <br>{email}");
             PopulateAccountInformation();
             ClearInputFields();
         }
