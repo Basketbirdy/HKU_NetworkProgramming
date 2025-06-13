@@ -5,25 +5,45 @@ using UnityEngine;
 
 public class ClientBehaviour : MonoBehaviour
 {
+    public static ClientBehaviour Instance { get; private set; }
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+    }
+
     public NetworkDriver driver;
     public NetworkConnection connection;
+    [Space]
+    public static string ip = "127.0.0.1";
+    public ushort port = 8005;
+
+    private Action onConnectionDropped;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         driver = NetworkDriver.Create();
 
-        var endpoint = NetworkEndpoint.Parse("192.168.178.63", 9000, NetworkFamily.Ipv4);
-        endpoint.Port = 1511;
+        var endpoint = NetworkEndpoint.Parse(ip, port, NetworkFamily.Ipv4);
         connection = driver.Connect(endpoint);
+
+        Debug.Log($"Attempting to connect to Server on {endpoint.Address}");
     }
 
     private void OnDestroy()
     {
         if (driver.IsCreated)
         {
-            driver.Dispose();
+            ShutDown();
         }
+    }
+    private void ShutDown()
+    {
+        driver.Dispose();
+        connection = default(NetworkConnection);
     }
 
     // Update is called once per frame
@@ -31,11 +51,10 @@ public class ClientBehaviour : MonoBehaviour
     {
         driver.ScheduleUpdate().Complete();
 
-        if(!connection.IsCreated)
-        {
-            return;
-        }
+        // check if connection is still alive
+        CheckAlive();
 
+        // handle messages
         DataStreamReader stream;
         NetworkEvent.Type cmd;
         while((cmd = connection.PopEvent(driver, out stream)) != NetworkEvent.Type.Empty)
@@ -48,15 +67,8 @@ public class ClientBehaviour : MonoBehaviour
                 {
                     name = AccountManager.Instance.Nickname
                 };
+
                 SendNetworkMessage(message);
-
-                // TODO - get player Id
-
-                //uint value = 1;
-                //driver.BeginSend(connection, out var writer);
-                //writer.WriteUInt((uint)NetworkMessageType.SEND_UINT);
-                //writer.WriteUInt(value);
-                //driver.EndSend(writer);
             }
             else if(cmd == NetworkEvent.Type.Data)
             {
@@ -91,8 +103,19 @@ public class ClientBehaviour : MonoBehaviour
             else if(cmd == NetworkEvent.Type.Disconnect)
             {
                 Debug.Log("Client got disconnected from the server");
-                connection = default;
+                connection = default(NetworkConnection);
+                onConnectionDropped?.Invoke();
+                ShutDown();
             }
+        }
+    }
+    private void CheckAlive()
+    {
+        if(!connection.IsCreated && driver.IsCreated)
+        {
+            Debug.Log("Something went wrong! lost connection to the server");
+            onConnectionDropped?.Invoke();
+            ShutDown();
         }
     }
 

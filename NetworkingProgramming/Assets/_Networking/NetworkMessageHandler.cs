@@ -12,6 +12,7 @@ public enum NetworkMessageType
 {
     // general 
     REMOTE_PROCEDURE_CALL,
+    KEEPALIVE,
 
     // general actions
     SPAWNMESSAGE,
@@ -30,6 +31,7 @@ public static class NetworkMessageInfo
     public static Dictionary<NetworkMessageType, System.Type> typeMap = new Dictionary<NetworkMessageType, System.Type>
     {
         {NetworkMessageType.REMOTE_PROCEDURE_CALL, typeof(RPCMessage) },
+        {NetworkMessageType.KEEPALIVE, typeof(KeepAliveMessage) },
 
         {NetworkMessageType.SPAWNMESSAGE, typeof(SpawnMessage) },
         {NetworkMessageType.OBJECT_POSITION, typeof(ObjectPositionMessage) },
@@ -57,6 +59,8 @@ public static class NetworkMessageHandler
     /// </summary>
     public static Dictionary<NetworkMessageType, ServerNetworkMessage> clientMessageHandlers = new Dictionary<NetworkMessageType, ServerNetworkMessage>
     {
+        {NetworkMessageType.KEEPALIVE, HandleClientKeepAlive },
+
         {NetworkMessageType.SPAWNMESSAGE, HandleClientSpawnMessage },
         {NetworkMessageType.OBJECT_POSITION, HandleClientObjectPosition},
 
@@ -66,6 +70,7 @@ public static class NetworkMessageHandler
 
     // messages received by the CLIENT, sent by the server
     #region Server Messages
+
     private static void HandleServerHandshakeResponse(object recipient, NetworkMessage networkMessage)
     {
         ClientBehaviour client = recipient as ClientBehaviour;
@@ -75,7 +80,7 @@ public static class NetworkMessageHandler
     }
     private static void HandleServerSpawnMessage(object recipient, NetworkMessage networkMessage)
     {
-        ClientBehaviour server = recipient as ClientBehaviour;
+        ClientBehaviour client = recipient as ClientBehaviour;
         SpawnMessage message = networkMessage as SpawnMessage;
 
         Debug.Log($"Received message to spawn an object: {message.objectType}, with id {message.networkId}");
@@ -111,6 +116,11 @@ public static class NetworkMessageHandler
 
     // messages received by the SERVER, sent by the clients
     #region Client Messages
+    private static void HandleClientKeepAlive(object recipient, NetworkConnection connection, NetworkMessage networkMessage)
+    {
+        ClientBehaviour client = recipient as ClientBehaviour;
+        KeepAliveMessage message = networkMessage as KeepAliveMessage;
+    }
     private static void HandleClientHandshake(object recipient, NetworkConnection connection, NetworkMessage networkMessage) // handshake is client trying to join the server
     {
         ServerBehaviour server = recipient as ServerBehaviour;
@@ -146,6 +156,7 @@ public static class NetworkMessageHandler
             NetworkedPlayer gameManagerInstance = player.GetComponent<NetworkedPlayer>();
             gameManagerInstance.isLocal = false;
             gameManagerInstance.isServer = true;
+            gameManagerInstance.nickname = message.name;
             networkId = gameManagerInstance.networkId;
 
             server.playerInstances.Add(connection, gameManagerInstance);

@@ -6,6 +6,15 @@ using UnityEngine;
 
 public class ServerBehaviour : MonoBehaviour
 {
+    public static ServerBehaviour Instance { get; private set; }
+    private void Awake()
+    {
+        if(Instance == null)
+        {
+            Instance = this;
+        }
+    }
+
     public NetworkDriver driver;
     public NativeList<NetworkConnection> connections;
 
@@ -13,6 +22,7 @@ public class ServerBehaviour : MonoBehaviour
     public Dictionary<NetworkConnection, NetworkedPlayer> playerInstances = new Dictionary<NetworkConnection, NetworkedPlayer>();
 
     private int playerCap = 2;
+    private Action onConnectionDropped;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -21,7 +31,7 @@ public class ServerBehaviour : MonoBehaviour
         connections = new NativeList<NetworkConnection>(16, Allocator.Persistent);
 
         var endpoint = NetworkEndpoint.AnyIpv4; // Accepts connections on any IPv4 address
-        endpoint.Port = 1511;
+        endpoint.Port = 8005;
         if (driver.Bind(endpoint) != 0)
         {
             Debug.LogError("Failed to bind to port 7777");
@@ -36,14 +46,20 @@ public class ServerBehaviour : MonoBehaviour
     {
         if (driver.IsCreated)
         {
-            driver.Dispose();
-            connections.Dispose();
+            ShutDown();
         }    
+    }
+    private void ShutDown()
+    {
+        driver.Dispose();
+        connections.Dispose();
     }
 
     // Update is called once per frame
     void Update()
     {
+        //KeepAlive();
+
         driver.ScheduleUpdate().Complete();
 
         // clean up past connections
@@ -124,11 +140,6 @@ public class ServerBehaviour : MonoBehaviour
         }
     }
 
-    //public void SendMessageHost(NetworkMessage msg)
-    //{
-    //    EventHandler<NetworkMessage>.InvokeEvent(GlobalEvents.SERVER_MESSAGE, msg);
-    //}
-
     public void SendNetworkMessageOne(uint id, NetworkMessage msg) 
     {
         var connection = connections[(int)id];
@@ -143,7 +154,6 @@ public class ServerBehaviour : MonoBehaviour
             Debug.LogError($"[Server] failed writing network message to all! {result}", this);
         }
     }
-
     public void SendNetworkMessageOne(NetworkConnection connection, NetworkMessage msg)
     {
         int result = driver.BeginSend(connection, out DataStreamWriter writer);
@@ -171,23 +181,23 @@ public class ServerBehaviour : MonoBehaviour
     // execute this when player hosted server starts
     private void OnPlayerHostedServer()
     {
-        // spawn server gamemanager
-        GameObject player;
-        uint networkedId = 0;
-        if (NetworkManager.Instance.Create(NetworkObjectType.PLAYER, NetworkManager.NextNetworkId, out player))
-        {
-            NetworkedPlayer instance = player.GetComponent<NetworkedPlayer>();
-            instance.isLocal = true;
-            instance.isServer = true;
-            networkedId = instance.networkId;
+        //// spawn server gamemanager
+        //GameObject player;
+        //uint networkedId = 0;
+        //if (NetworkManager.Instance.Create(NetworkObjectType.PLAYER, NetworkManager.NextNetworkId, out player))
+        //{
+        //    NetworkedPlayer instance = player.GetComponent<NetworkedPlayer>();
+        //    instance.isLocal = true;
+        //    instance.isServer = true;
+        //    networkedId = instance.networkId;
 
-            playerNames.Add(default, AccountManager.Instance.Nickname);
-            playerInstances.Add(default, instance);
-        }
-        else
-        {
-            Debug.LogError("Could not spawn server manager");
-        }
+        //    playerNames.Add(default, AccountManager.Instance.Nickname);
+        //    playerInstances.Add(default, instance);
+        //}
+        //else
+        //{
+        //    Debug.LogError("Could not spawn server manager");
+        //}
 
     }
 

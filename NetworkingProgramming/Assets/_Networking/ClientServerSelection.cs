@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -6,6 +7,8 @@ public class ClientServerSelection : MonoBehaviour
     [Header("Scene indices")]
     [SerializeField] private int serverScene;
     [SerializeField] private int clientScene;
+    [Space]
+    [SerializeField] private TMP_InputField ipInput;
 
     [Header("Settings")]
     private IPopup popup;
@@ -34,6 +37,8 @@ public class ClientServerSelection : MonoBehaviour
         if (TryClient())
         {
             if (!AccountManager.Instance.LoggedIn) { AccountManager.Instance.SetGuest(); }
+            ClientBehaviour.ip = ipInput.text;
+
             LoadScene(clientScene);
         }
     }
@@ -48,6 +53,11 @@ public class ClientServerSelection : MonoBehaviour
     private bool TryClient()
     {
         if (!CheckLogin("join")) { return false; }
+        if (string.IsNullOrEmpty(ipInput.text)) 
+        {
+            popup.Show($"missing ip!", $"The ip input field is empty. Please enter the correct ip adress before trying to join");
+            return false; 
+        }
 
         return true;
     }
