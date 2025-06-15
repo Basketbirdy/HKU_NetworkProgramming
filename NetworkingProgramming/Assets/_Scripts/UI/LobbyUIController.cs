@@ -1,11 +1,14 @@
 using TMPro;
 using Unity.Networking.Transport;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class LobbyUIHandler : BaseUIController
+public class LobbyUIController : BaseUIController
 {
     [SerializeField] private TextMeshProUGUI player1Text;
     [SerializeField] private TextMeshProUGUI player2Text;
+
+    [SerializeField] private Button startGameButton;
 
     [SerializeField] private GameObject notificationPrefab;
 
@@ -27,5 +30,12 @@ public class LobbyUIHandler : BaseUIController
     {
         UIManager.Instance.AddReference<TextMeshProUGUI>("player1Text", player1Text);
         UIManager.Instance.AddReference<TextMeshProUGUI>("player2Text", player2Text);
+
+        UIManager.Instance.AddReference<Button>("StartGameButton", startGameButton);
+    }
+
+    public void OnStartGameButtonPressed()
+    {
+        EventHandler.InvokeEvent(GlobalEvents.GAME_START);
     }
 }

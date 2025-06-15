@@ -1,15 +1,22 @@
 using UnityEngine;
 using Unity.Networking.Transport;
+using System.Collections.Generic;
 
 public enum GameState { LOBBY, PLAYING }
 public enum SubGameState { ACTIVE, INACTIVE }
 public class GameManager : MonoBehaviour
 {
+    // NETWORKING
+
     [SerializeField] private bool isClient;
     [SerializeField] private bool isServer;
 
-    private ServerBehaviour server;
     private ClientBehaviour client;
+    private ServerBehaviour server;
+
+    // GAME
+
+    private Dictionary<int, string> playerList = new Dictionary<int, string>();
 
     [Header("State")]
     [SerializeField] private GameState gameState = GameState.LOBBY;
@@ -28,31 +35,27 @@ public class GameManager : MonoBehaviour
 
     private void OnEnable()
     {
-        EventHandler<NetworkMessage>.AddListener(GlobalEvents.MESSAGE_RECEIVED, OnPlayerJoined);
-
         if (isClient)
         {
-
+            client.AddMessageEventListener(OnPlayerJoinedMessage);
         }
 
         if (isServer)
         {
-            
-
+            server.AddMessageEventListener();
         }
     }
 
     private void OnDisable()
     {
-        EventHandler<NetworkMessage>.RemoveListener(GlobalEvents.MESSAGE_RECEIVED, OnPlayerJoined);
-
         if (isClient)
         {
-            
+            client.RemoveMessageEventListener(OnPlayerJoinedMessage);
         }
 
         if (isServer)
         {
+            server.RemoveMessageEventListener();
         }
     }
 
@@ -66,7 +69,6 @@ public class GameManager : MonoBehaviour
         if (isServer)
         {
             server = FindAnyObjectByType<ServerBehaviour>();
-            client = FindAnyObjectByType<ClientBehaviour>();
         }
     }
 
@@ -84,35 +86,56 @@ public class GameManager : MonoBehaviour
 
     public void OnStartGame()
     {
+        Debug.Log($"Starting game!");
+
+        // setup game
+
         // send message to all connected clients to start the game
     }
 
-    private void OnPlayerJoined(NetworkMessage message)
+    private void OnPlayerJoinedMessage(NetworkMessage message)
     {
         Debug.Log($"Received Network message in GameManager!, {message.GetType()}");
 
         // if network message is not of expected type, return and do nothing
-        if(message.GetType() != typeof(PlayerJoinedMessage)) { return; }
+        if(!TypeUtils.CompareType<PlayerJoinedMessage>(message.GetType())) { return; }
         PlayerJoinedMessage msg = message as PlayerJoinedMessage;
 
         if (isClient)
         {
-            // update player list with player name
-            Debug.Log($"updating list: {msg.playerNumber} with {msg.name}");
-            UIManager.Instance.SetText($"player{msg.playerNumber}Text", msg.name);
+            UpdatePlayerList(msg.playerNames);
+            
+            var notificationController = UIManager.Instance.GetUIControllerAs<NotificationUIController>("NotificationUIController");
+            notificationController.SendNotification("Server", $"{msg.name} joined as player {msg.playerNumber}" );
         }
 
         if (isServer)
         {
             if(server.playerNames.Count >= minimumPlayers)
             {
-                // enable start game button
+                // send out notification
+                var notificationMessage = new NotificationMessage()
+                {
+                    source = "Server",
+                    message = "Enough players present to start the game! waiting for host...",
+                };
+
+                server.SendNetworkMessageAll(notificationMessage);
+
+                // enable start game ui
+                UIManager.Instance.EnableButton("StartGameButton");
             }
         }
     }
 
-    private void StartGame()
+    private void UpdatePlayerList(List<string> list)
     {
-
+        // update player list with player name
+        playerList.Clear();
+        for (int i = 0; i < list.Count; i++)
+        {
+            playerList.Add(i + 1, list[i]);
+            UIManager.Instance.SetText($"player{i + 1}Text", list[i]);
+        }
     }
 }

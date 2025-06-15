@@ -4,6 +4,7 @@ using System.Linq;
 using Unity.Collections;
 using Unity.Networking.Transport;
 using UnityEngine;
+using UnityEngine.Analytics;
 using UnityEngine.EventSystems;
 
 public delegate void ServerNetworkMessage(ServerBehaviour server, NetworkConnection connection, NetworkMessage msg);
@@ -18,6 +19,7 @@ public enum NetworkMessageType
     // general actions
     SPAWNMESSAGE,
     OBJECT_POSITION,
+    NOTIFICATION,
 
     // specific
     HANDSHAKE,
@@ -37,6 +39,7 @@ public static class NetworkMessageInfo
 
         {NetworkMessageType.SPAWNMESSAGE, typeof(SpawnMessage) },
         {NetworkMessageType.OBJECT_POSITION, typeof(ObjectPositionMessage) },
+        {NetworkMessageType.NOTIFICATION, typeof(NotificationMessage) },
 
         {NetworkMessageType.HANDSHAKE, typeof(HandshakeMessage) },
         {NetworkMessageType.HANDSHAKE_RESPONSE, typeof(HandshakeResponseMessage) },
@@ -55,6 +58,7 @@ public static class NetworkMessageHandler
 
         {NetworkMessageType.SPAWNMESSAGE, HandleServerSpawnMessage },
         {NetworkMessageType.OBJECT_POSITION, HandleServerObjectPosition },
+        {NetworkMessageType.NOTIFICATION, HandleServerNotification },
 
         {NetworkMessageType.HANDSHAKE_RESPONSE, HandleServerHandshakeResponse },
 
@@ -136,6 +140,14 @@ public static class NetworkMessageHandler
 
         // respond
     }
+    private static void HandleServerNotification(object recipient, NetworkMessage networkMessage)
+    {
+        ClientBehaviour client = recipient as ClientBehaviour;
+        var message = networkMessage as NotificationMessage;
+
+        var notificationUIController = UIManager.Instance.GetUIControllerAs<NotificationUIController>("NotificationUIController");
+        notificationUIController.SendNotification(message.source, message.message);
+    }
     #endregion
 
     // messages received by the SERVER, sent by the clients
@@ -209,13 +221,6 @@ public static class NetworkMessageHandler
             };
 
             server.SendNetworkMessageOne(connection, spawnMessage);
-
-            // send player joined message to all
-            PlayerJoinedMessage playerJoinedMessage = new PlayerJoinedMessage()
-            {
-                name = message.name,
-                playerNumber = playerNumber,
-            };
         }
 
         // send creation of this player to all other players
@@ -228,10 +233,24 @@ public static class NetworkMessageHandler
             };
 
             server.SendNetworkMessageAll(spawnMessage);
+
+            List<string> playerNames = new List<string>();
+            foreach (KeyValuePair<NetworkConnection, string> playerPair in server.playerNames)
+            {
+                playerNames.Add(playerPair.Value);
+            }
+
+            // send player joined message to all
+            PlayerJoinedMessage playerJoinedMessage = new PlayerJoinedMessage()
+            {
+                name = message.name,
+                playerNumber = playerNumber,
+
+                playerNames = playerNames,
+            };
+
+            server.SendNetworkMessageAll(playerJoinedMessage);
         }
-
-
-        server.SendNetworkMessageAll(playerJoinedMessage);
     }
     private static void HandleClientStartGame(object recipient, NetworkConnection connection, NetworkMessage networkMessage)
     {

@@ -33,6 +33,8 @@ public class UIManager : MonoBehaviour
 
         typeof(Button),
         typeof(TMP_InputField),
+
+        typeof(BaseUIController),
     };
 
     public void AddReference<T>(string id, T type)
@@ -138,6 +140,16 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    // custom class helpers
+    public T GetUIControllerAs<T>(string id) where T : BaseUIController
+    {
+        if (dynamicUIControllers.ContainsKey(id))
+        {
+            return dynamicUIControllers[id] as T;
+        }
+        return null;
+    }
+
     // textmesh helpers
     public bool SetText(string id, string text)
     {
@@ -145,6 +157,26 @@ public class UIManager : MonoBehaviour
         {
             dynamicTextMeshes[id].text = text;
             return true;
+        }
+        return false;
+    }
+
+    // button helpers
+    public bool EnableButton(string id)
+    {
+        if (dynamicButtons.ContainsKey(id))
+        {
+            dynamicButtons[id].interactable = true;
+            return true;
+        }
+        return false;
+    }
+    public bool DisableButton(string id)
+    {
+        if (dynamicButtons.ContainsKey(id))
+        {
+            dynamicButtons[id].interactable = false;
+            return false;
         }
         return false;
     }

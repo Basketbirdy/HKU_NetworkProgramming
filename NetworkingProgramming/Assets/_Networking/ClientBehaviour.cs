@@ -96,7 +96,7 @@ public class ClientBehaviour : MonoBehaviour
                     Debug.LogError($"[Server] no message type identified!");
                 }
 
-                EventHandler<NetworkMessage>.InvokeEvent(GlobalEvents.MESSAGE_RECEIVED, msg);
+                EventHandler<NetworkMessage>.InvokeEvent(GlobalEvents.MESSAGE_CLIENT_RECEIVED, msg);
 
                 //uint value = stream.ReadUInt();
                 //Debug.Log($"Got the value {value} back from the server");
@@ -138,6 +138,24 @@ public class ClientBehaviour : MonoBehaviour
         else
         {
             Debug.LogError($"[Client] failed writing network message! {result}", this);
+        }
+    }
+
+    // receive message event
+    public void AddMessageEventListener(params Action<NetworkMessage>[] actions)
+    {
+        for (int i = 0; i < actions.Length; i++)
+        {
+            Debug.Log("[Client] adding message event listener!" + actions[i].ToString());
+            EventHandler<NetworkMessage>.AddListener(GlobalEvents.MESSAGE_CLIENT_RECEIVED, actions[i]);
+        }
+    }
+    public void RemoveMessageEventListener(params Action<NetworkMessage>[] actions)
+    {
+        for (int i = 0; i < actions.Length; i++)
+        {
+            Debug.Log("[Client] removing message event listener!" + actions[i].ToString());
+            EventHandler<NetworkMessage>.RemoveListener(GlobalEvents.MESSAGE_CLIENT_RECEIVED, actions[i]);
         }
     }
 }

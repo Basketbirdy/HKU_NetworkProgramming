@@ -98,7 +98,7 @@ public class ServerBehaviour : MonoBehaviour
                     NetworkMessage msg = (NetworkMessage)Activator.CreateInstance(NetworkMessageInfo.typeMap[messageType]);
                     msg.Decode(ref stream);
 
-                    EventHandler<NetworkMessage>.InvokeEvent(GlobalEvents.MESSAGE_RECEIVED, msg);
+                    EventHandler<NetworkMessage>.InvokeEvent(GlobalEvents.MESSAGE_SERVER_RECEIVED, msg);
 
                     if(NetworkMessageHandler.clientMessageHandlers.ContainsKey(messageType))
                     {
@@ -116,7 +116,7 @@ public class ServerBehaviour : MonoBehaviour
                         Debug.LogError($"[Server] no message type identified!");
                     }
 
-                    EventHandler<NetworkMessage>.InvokeEvent(GlobalEvents.MESSAGE_RECEIVED, msg);
+                    EventHandler<NetworkMessage>.InvokeEvent(GlobalEvents.MESSAGE_SERVER_RECEIVED, msg);
                 }
                 else if(cmd == NetworkEvent.Type.Disconnect)
                 {
@@ -239,12 +239,20 @@ public class ServerBehaviour : MonoBehaviour
     }
 
     // receive message event
-    public void AddMessageEventListener(Action<NetworkMessage> action)
+    public void AddMessageEventListener(params Action<NetworkMessage>[] actions)
     {
-        EventHandler<NetworkMessage>.AddListener(GlobalEvents.SERVER_MESSAGE, action);
+        for(int i = 0; i < actions.Length; i++) 
+        { 
+            Debug.Log("[Server] adding message event listener!" + actions[i].ToString());
+            EventHandler<NetworkMessage>.AddListener(GlobalEvents.MESSAGE_SERVER_RECEIVED, actions[i]);     
+        }
     }
-    public void RemoveMessageEventListener(Action<NetworkMessage> action)
+    public void RemoveMessageEventListener(params Action<NetworkMessage>[] actions)
     {
-        EventHandler<NetworkMessage>.RemoveListener(GlobalEvents.SERVER_MESSAGE, action);
+        for (int i = 0; i < actions.Length; i++)
+        {
+            Debug.Log("[Server] removing message event listener!" + actions[i].ToString());
+            EventHandler<NetworkMessage>.RemoveListener(GlobalEvents.MESSAGE_SERVER_RECEIVED, actions[i]);
+        }
     }
 }
