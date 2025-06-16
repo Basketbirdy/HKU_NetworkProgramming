@@ -3,7 +3,6 @@ using Unity.Networking.Transport;
 using System.Collections.Generic;
 
 public enum GameState { LOBBY, PLAYING }
-public enum SubGameState { ACTIVE, INACTIVE }
 public class GameManager : MonoBehaviour
 {
     // NETWORKING
@@ -17,10 +16,13 @@ public class GameManager : MonoBehaviour
     // GAME
 
     private Dictionary<int, string> playerList = new Dictionary<int, string>();
+    private CardFactory cardFactory;
 
-    [Header("State")]
+    [Header("Game State")]
     [SerializeField] private GameState gameState = GameState.LOBBY;
-    [SerializeField] private SubGameState subGameState = SubGameState.INACTIVE;
+
+    [Header("Round state")]
+    [SerializeField] private int activePlayer;
 
     [Header("Game settings")]
     [SerializeField] private int minimumPlayers = 2;
@@ -37,7 +39,7 @@ public class GameManager : MonoBehaviour
     {
         if (isClient)
         {
-            client.AddMessageEventListener(OnPlayerJoinedMessage);
+            client.AddMessageEventListener(OnPlayerJoinedMessage, OnStartGame);
         }
 
         if (isServer)
@@ -64,6 +66,7 @@ public class GameManager : MonoBehaviour
         if (isClient)
         {
             client = FindAnyObjectByType<ClientBehaviour>();
+            cardFactory = GetComponent<CardFactory>();
         }
 
         if (isServer)
@@ -75,7 +78,14 @@ public class GameManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        if (isClient)
+        {
+        }
+
+        if (isServer)
+        {
+        }
+
     }
 
     // Update is called once per frame
@@ -84,13 +94,33 @@ public class GameManager : MonoBehaviour
         
     }
 
-    public void OnStartGame()
+    public void OnStartGamePressed()
     {
-        Debug.Log($"Starting game!");
-
-        // setup game
+        Debug.Log($"Start game button pressed!");
 
         // send message to all connected clients to start the game
+        StartGameMessage startGameMessage = new StartGameMessage()
+        {
+            
+        };
+
+        client.SendNetworkMessage(startGameMessage);
+    }
+    public void OnStartGame(NetworkMessage message)
+    {
+        // if network message is not of expected type, return and do nothing
+        if (!TypeUtils.CompareType<StartGameMessage>(message.GetType())) { return; }
+        var msg = message as StartGameMessage;
+
+        if (isClient)
+        {
+            
+        }
+
+        if(isServer)
+        {
+
+        }
     }
 
     private void OnPlayerJoinedMessage(NetworkMessage message)

@@ -8,12 +8,16 @@ public class HandshakeResponseMessage : NetworkMessage
     public string message = "";
     public uint networkId = 0;
 
+    public uint playerNumber;
+
     public override void Encode(ref DataStreamWriter writer)
     {
         base.Encode(ref writer);
         
         writer.WriteFixedString128(message);
         writer.WriteUInt(networkId);
+
+        writer.WriteUInt(playerNumber);
     }
 
     public override void Decode(ref DataStreamReader reader)
@@ -22,5 +26,7 @@ public class HandshakeResponseMessage : NetworkMessage
 
         message = reader.ReadFixedString128().ToString();
         networkId = reader.ReadUInt();
+
+        playerNumber = reader.ReadUInt();
     }
 }

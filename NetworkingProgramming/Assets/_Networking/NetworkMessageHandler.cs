@@ -96,8 +96,12 @@ public static class NetworkMessageHandler
 
         if(response.message == "0")
         {
+            // TODO - How do I properly disconnect a client manually?
             client.ShutDown();
+            return;
         }
+
+        client.playerNumber = (int)response.playerNumber;
     }
     private static void HandleServerPlayerJoined(object recipient, NetworkMessage networkMessage)
     {
@@ -200,6 +204,8 @@ public static class NetworkMessageHandler
             {
                 message = $"Welcome {message.name}!",
                 networkId = networkId,
+
+                playerNumber = (uint)playerNumber,
             };
 
             server.SendNetworkMessageOne(connection, response);

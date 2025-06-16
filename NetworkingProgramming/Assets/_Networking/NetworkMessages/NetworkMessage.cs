@@ -19,4 +19,36 @@ public abstract class NetworkMessage
         // reads message type outside of decode function
         Id = reader.ReadUInt();
     }
+
+    public void WriteVector3(ref DataStreamWriter writer, Vector3 vector)
+    {
+        writer.WriteUInt((uint)vector.x);
+        writer.WriteUInt((uint)vector.y);
+        writer.WriteUInt((uint)vector.z);
+    }
+    public Vector3 ReadVector3(ref DataStreamReader reader) 
+    {
+        Vector3 v;
+        v.x = reader.ReadUInt();
+        v.y = reader.ReadUInt();
+        v.z = reader.ReadUInt();
+        return v;
+    }
+
+    public void WriteColor(ref DataStreamWriter writer, Color color)
+    {
+        writer.WriteUInt((uint)color.r);
+        writer.WriteUInt((uint)color.g);
+        writer.WriteUInt((uint)color.b);
+        writer.WriteUInt((uint)color.a);
+    }
+    public Color ReadColor(ref DataStreamReader reader) 
+    {
+        Color c;
+        c.r = reader.ReadUInt();
+        c.g = reader.ReadUInt();
+        c.b = reader.ReadUInt();
+        c.a = reader.ReadUInt();
+        return c;
+    }
 }

@@ -13,3 +13,10 @@ MonoBehaviour:
   m_Name: DefaultScissors
   m_EditorClassIdentifier: 
   type: 2
+  cardColor: {r: 1, g: 1, b: 1, a: 1}
+  imageData:
+    image: {fileID: 21300000, guid: 9fade944ee08a1e4e849d478785169dc, type: 3}
+    offset: {x: 0.2, y: 0, z: 0}
+    rotation: {x: 0, y: 0, z: 55}
+    scale: {x: 1, y: 1.1, z: 1}
+    color: {r: 1, g: 1, b: 1, a: 1}

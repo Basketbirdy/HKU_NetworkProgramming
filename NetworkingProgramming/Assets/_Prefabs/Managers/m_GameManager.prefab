@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1927968611715143655}
   - component: {fileID: 4609561607703611530}
+  - component: {fileID: 4140795672241955188}
   m_Layer: 0
   m_Name: m_GameManager
   m_TagString: Untagged
@@ -50,3 +51,16 @@ MonoBehaviour:
   subGameState: 1
   minimumPlayers: 2
   defaultDeck: {fileID: 11400000, guid: eb792259ff93d4143a5815f99660f604, type: 2}
+--- !u!114 &4140795672241955188
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7373191938973412644}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e360fc0c404a7f94e92b4752adbbb30e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefab: {fileID: 8888967335303626418, guid: febcf3f090111b848abd1cf6dac659ff, type: 3}
