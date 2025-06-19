@@ -47,10 +47,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isClient: 1
   isServer: 1
-  gameState: 0
-  subGameState: 1
+  cardHolder: {fileID: 0}
   minimumPlayers: 2
   defaultDeck: {fileID: 11400000, guid: eb792259ff93d4143a5815f99660f604, type: 2}
+  startCardCount: 3
+  startLifeCount: 3
+  activePlayer: 0
+  scoreData:
+    gameId: 0
+    player1Id: 0
+    player2Id: 0
+    playerWinnerId: 0
+    score: 0
+    roundsPlayed: 0
+    roundsTied: 0
+    rockCount: 0
+    paperCount: 0
+    scissorsCount: 0
+  roundsPlayed: 0
+  roundsTied: 0
+  cardMask:
+    serializedVersion: 2
+    m_Bits: 8
 --- !u!114 &4140795672241955188
 MonoBehaviour:
   m_ObjectHideFlags: 0

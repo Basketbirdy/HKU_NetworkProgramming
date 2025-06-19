@@ -8,6 +8,7 @@ public class HandshakeMessage : NetworkMessage
 
     public string name = "";
     public uint networkId;
+    public uint userId;
 
     public override void Encode(ref DataStreamWriter writer)
     {
@@ -16,6 +17,7 @@ public class HandshakeMessage : NetworkMessage
 
         writer.WriteFixedString128(name);
         writer.WriteUInt(networkId);
+        writer.WriteUInt(userId);
     }
 
     public override void Decode(ref DataStreamReader reader)
@@ -24,5 +26,6 @@ public class HandshakeMessage : NetworkMessage
 
         name = reader.ReadFixedString128().ToString();
         networkId = reader.ReadUInt();
+        userId = reader.ReadUInt();
     }
 }

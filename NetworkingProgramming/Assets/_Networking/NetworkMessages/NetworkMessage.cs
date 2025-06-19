@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
 
@@ -50,5 +51,26 @@ public abstract class NetworkMessage
         c.b = reader.ReadUInt();
         c.a = reader.ReadUInt();
         return c;
+    }
+
+    // class functions
+    public void WriteCardStack(ref DataStreamWriter writer, CardStack cardStack)
+    {
+        writer.WriteUInt((uint)cardStack.stack.Count);
+        for(int i = 0; i < cardStack.stack.Count; i++)
+        {
+            writer.WriteUInt((uint)cardStack.stack[i].type);
+        }
+    }
+    public CardStack ReadCardStack(ref DataStreamReader reader)
+    {
+        List<CardSO> cards = new List<CardSO>();
+        uint count = reader.ReadUInt();
+
+        for(int i = 0; i < count; i++) 
+        {
+            cards.Add(NetworkManager.Instance.GetCard((int)reader.ReadUInt()));
+        }
+        return new CardStack(cards);
     }
 }

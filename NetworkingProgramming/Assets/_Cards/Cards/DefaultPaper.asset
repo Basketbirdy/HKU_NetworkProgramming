@@ -12,11 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 811ef455112a9a14dbb16c0b62e163fb, type: 3}
   m_Name: DefaultPaper
   m_EditorClassIdentifier: 
+  id: 
   type: 1
-  cardColor: {r: 1, g: 1, b: 1, a: 1}
+  cardColor: {r: 1, g: 0.923682, b: 0.7688679, a: 1}
   imageData:
     image: {fileID: 21300000, guid: 124ab2a8d5e5de94f89a24a99cdcee54, type: 3}
     offset: {x: 0, y: 0, z: 0}
     rotation: {x: 0, y: 0, z: 0}
     scale: {x: 1, y: 1, z: 1}
-    color: {r: 1, g: 1, b: 1, a: 1}
+    color: {r: 0.4433962, g: 0.4433962, b: 0.4433962, a: 1}

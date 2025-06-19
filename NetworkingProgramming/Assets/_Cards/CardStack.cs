@@ -1,22 +1,36 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Unity.Collections;
 
+[System.Serializable]
 public class CardStack
 {
     public List<CardSO> stack = new List<CardSO>();
+    private int LastIndex => stack.Count - 1;
     
     public CardStack(List<CardSO> cards)
     {
         Fill(cards);
     }
-
-    public CardSO Draw()
+    public void Fill(List<CardSO> cards)
     {
-        return GetLastCard();
+        stack = cards;
     }
 
-    public void Add()
+    public bool Draw(out CardSO card)
     {
+        card = null;
+        if(stack.Count == 0) { return false; }
+        
+        card = stack[LastIndex];
+        stack.RemoveAtSwapBack(LastIndex);
+        
+        return true;
+    }
+
+    public void Add(CardSO card)
+    {
+        stack.Add(card);
     }
 
     public void Shuffle()
@@ -29,24 +43,17 @@ public class CardStack
     }
 
     // helper function
-    private CardSO GetLastCard()
-    {
-        return stack[stack.Count - 1];
-    }
     private void SwapCards(ref List<CardSO> deck, int index, int targetIndex)
     {
         if (index == targetIndex) { return; }
-        Debug.Log($"[Deck] swapping cards: deck[{index}] - {deck[index]}, deck[{targetIndex}] - {deck[targetIndex]}");
+        //Debug.Log($"[Deck] swapping cards: deck[{index}] - {deck[index]}, deck[{targetIndex}] - {deck[targetIndex]}");
 
         var temp = deck[index];
         deck[index] = deck[targetIndex];
         deck[targetIndex] = temp;
 
-        Debug.Log($"[Deck] swapping cards: deck[{index}] - {deck[index]}, deck[{targetIndex}] - {deck[targetIndex]}");
+        //Debug.Log($"[Deck] swapping cards: deck[{index}] - {deck[index]}, deck[{targetIndex}] - {deck[targetIndex]}");
     }
 
-    private void Fill(List<CardSO> cards)
-    {
-        stack = cards;
-    }
+
 }

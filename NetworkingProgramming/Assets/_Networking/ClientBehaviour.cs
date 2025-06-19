@@ -70,7 +70,8 @@ public class ClientBehaviour : MonoBehaviour
 
                 HandshakeMessage message = new HandshakeMessage()
                 {
-                    name = AccountManager.Instance.Nickname
+                    name = AccountManager.Instance.Nickname,
+                    userId = (uint)AccountManager.Instance.User_Id,
                 };
 
                 SendNetworkMessage(message);
@@ -96,7 +97,7 @@ public class ClientBehaviour : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogError($"[Server] no message type identified!");
+                    Debug.LogWarning($"[Server] no message type identified!");
                 }
 
                 EventHandler<NetworkMessage>.InvokeEvent(GlobalEvents.MESSAGE_CLIENT_RECEIVED, msg);

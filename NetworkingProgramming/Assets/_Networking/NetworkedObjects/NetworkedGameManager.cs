@@ -4,10 +4,6 @@ using System.Collections.Generic;
 
 public class NetworkedGameManager : NetworkedBehaviour
 {
-    [Header("State")]
-    [SerializeField] private GameState gameState = GameState.LOBBY;
-    [SerializeField] private SubGameState subGameState = SubGameState.INACTIVE;
-
     [Header("Game settings")]
     [SerializeField] private int minimumPlayers = 2;
     [SerializeField] private DeckSO defaultDeck;

@@ -18,8 +18,8 @@ public class ServerBehaviour : MonoBehaviour
 
     public NetworkDriver driver;
     public NativeList<NetworkConnection> connections;
-
     public Dictionary<NetworkConnection, string> playerNames = new Dictionary<NetworkConnection, string>();
+    public Dictionary<NetworkConnection, int> playerNumbers = new Dictionary<NetworkConnection, int>();
     public Dictionary<NetworkConnection, NetworkedPlayer> playerInstances = new Dictionary<NetworkConnection, NetworkedPlayer>();
 
     private int playerCap = 2;
@@ -97,8 +97,6 @@ public class ServerBehaviour : MonoBehaviour
                     // process received message
                     NetworkMessage msg = (NetworkMessage)Activator.CreateInstance(NetworkMessageInfo.typeMap[messageType]);
                     msg.Decode(ref stream);
-
-                    EventHandler<NetworkMessage>.InvokeEvent(GlobalEvents.MESSAGE_SERVER_RECEIVED, msg);
 
                     if(NetworkMessageHandler.clientMessageHandlers.ContainsKey(messageType))
                     {

@@ -28,6 +28,10 @@ public enum NetworkMessageType
 
     GAME_READYTOSTART,
     GAME_START,
+    GAME_STARTED,
+
+    ROUND_START,
+    ROUND_END
 }
 
 public static class NetworkMessageInfo
@@ -43,7 +47,13 @@ public static class NetworkMessageInfo
 
         {NetworkMessageType.HANDSHAKE, typeof(HandshakeMessage) },
         {NetworkMessageType.HANDSHAKE_RESPONSE, typeof(HandshakeResponseMessage) },
-        {NetworkMessageType.PLAYER_JOINED, typeof(PlayerJoinedMessage) }
+        {NetworkMessageType.PLAYER_JOINED, typeof(PlayerJoinedMessage) },
+
+        {NetworkMessageType.GAME_READYTOSTART, typeof(GameReadyToStartMessage) },
+        {NetworkMessageType.GAME_START, typeof(StartGameMessage) },
+        {NetworkMessageType.GAME_STARTED, typeof(GameStartedMessage) },
+
+        {NetworkMessageType.ROUND_START, typeof(RoundStartMessage) },
     };
 }
 
@@ -199,6 +209,7 @@ public static class NetworkMessageHandler
             playerNumber = playerInstance.playerNumber;
 
             server.playerInstances.Add(connection, playerInstance);
+            server.playerNumbers.Add(connection, playerNumber);
 
             HandshakeResponseMessage response = new HandshakeResponseMessage()
             {
@@ -250,7 +261,8 @@ public static class NetworkMessageHandler
             PlayerJoinedMessage playerJoinedMessage = new PlayerJoinedMessage()
             {
                 name = message.name,
-                playerNumber = playerNumber,
+                playerNumber = (uint)playerNumber,
+                userId = message.userId,
 
                 playerNames = playerNames,
             };

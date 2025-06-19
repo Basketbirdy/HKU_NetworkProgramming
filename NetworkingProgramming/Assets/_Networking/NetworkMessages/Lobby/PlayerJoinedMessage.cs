@@ -7,7 +7,8 @@ public class PlayerJoinedMessage : NetworkMessage
     public override NetworkMessageType Type => NetworkMessageType.PLAYER_JOINED;
 
     public string name;         // name of the player that joined
-    public int playerNumber;    // number of the player that joined
+    public uint playerNumber;    // number of the player that joined
+    public uint userId;
 
     public List<string> playerNames = new List<string>();   // list of all existing players
 
@@ -16,7 +17,8 @@ public class PlayerJoinedMessage : NetworkMessage
         base.Encode(ref writer);
 
         writer.WriteFixedString128(name);
-        writer.WriteInt(playerNumber);
+        writer.WriteUInt(playerNumber);
+        writer.WriteUInt(userId);
 
         writer.WriteUInt((uint)playerNames.Count);
         for (int i = 0; i < playerNames.Count; i++)
@@ -30,7 +32,8 @@ public class PlayerJoinedMessage : NetworkMessage
         base.Decode(ref reader);
 
         name = reader.ReadFixedString128().ToString();
-        playerNumber = reader.ReadInt();
+        playerNumber = reader.ReadUInt();
+        userId = reader.ReadUInt();
 
         uint playerCount = reader.ReadUInt();
         for(int i = 0;  i < playerCount; i++)

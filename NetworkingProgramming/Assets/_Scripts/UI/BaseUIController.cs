@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public abstract class BaseUIController : MonoBehaviour
@@ -8,6 +9,8 @@ public abstract class BaseUIController : MonoBehaviour
 
     private Coroutine fade;
 
+    protected bool isVisible;
+
     private void Awake()
     {
         rootCanvas = GetComponent<Canvas>();
@@ -16,20 +19,22 @@ public abstract class BaseUIController : MonoBehaviour
         if(rootCanvas == null) { Debug.LogError($"No root canvas group found on {gameObject.name}"); }
     }
 
-    public void HideCanvas() { rootCanvas.enabled = false; }
+    //public void HideCanvas() { rootCanvas.enabled = false; }
     public void HideCanvas(float duration = .1f)
     {
         rootGroup.interactable = false;
         rootGroup.blocksRaycasts = false;
         fade = Fade(rootGroup, 1f, 0f, duration);
+        isVisible = false;
     }
 
-    public void ShowCanvas() { rootCanvas.enabled = true; }
+    //public void ShowCanvas() { rootCanvas.enabled = true; }
     public void ShowCanvas(float duration = .1f)
     {
         rootGroup.interactable = true;
         rootGroup.blocksRaycasts = true;
         fade = Fade(rootGroup, 0f, 1f, duration);
+        isVisible = true;
     }
 
     private Coroutine Fade(CanvasGroup group, float start, float end, float duration, bool killExisting = true)

@@ -9,7 +9,8 @@ public class NetworkManager : MonoBehaviour
 
     [SerializeField] private SpawnInfo spawnInfo;
     Dictionary<uint, GameObject> networkedObjects = new Dictionary<uint, GameObject>();
-
+    [SerializeField] private CardInfo cardInfo;
+    Dictionary<uint, CardSO> networkedCards = new Dictionary<uint, CardSO>();
 
     private void Awake()
     {
@@ -57,5 +58,20 @@ public class NetworkManager : MonoBehaviour
         {
             return false;
         }
+    }
+
+    public CardSO GetCard(string id)
+    {
+        foreach (CardSO card in cardInfo.cards)
+        {
+            if (card.id != id) { continue; }
+            return card;
+        }
+        return null;
+    }
+    public CardSO GetCard(int id)
+    {
+        if (id >= cardInfo.cards.Count) { return null; }
+        return cardInfo.cards[id];
     }
 }

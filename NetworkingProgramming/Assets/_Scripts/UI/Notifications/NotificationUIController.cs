@@ -9,9 +9,21 @@ public class NotificationUIController : BaseUIController
     [SerializeField] private int maxQueueSize = 10;
     private Queue<INotification> notificationQueue = new Queue<INotification>();
 
+    private float timestamp = Mathf.Infinity;
+    [SerializeField] private float showTime = 5f;
+
     private void Start()
     {
         UIManager.Instance.AddReference<BaseUIController>(GetType().ToString(), this);
+        HideCanvas(.7f);
+    }
+
+    private void Update()
+    {
+        if(isVisible && Time.time > timestamp + showTime)
+        {
+            HideCanvas();
+        }
     }
 
     public void SendNotification(string source, string message)
@@ -29,6 +41,9 @@ public class NotificationUIController : BaseUIController
         INotification newNotification = Instantiate(prefab, container).GetComponent<INotification>();
         notificationQueue.Enqueue(newNotification);
         newNotification.Init(source, message);
+
+        ShowCanvas(.5f);
+        timestamp = Time.time;
     }
 }
 

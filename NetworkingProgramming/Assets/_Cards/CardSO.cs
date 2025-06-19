@@ -5,6 +5,9 @@ public enum CardType { ROCK, PAPER, SCISSORS }
 [CreateAssetMenu(menuName = "Cards/Card")]
 public class CardSO : ScriptableObject
 {
+    [Header("Identifier")]
+    public string id;
+
     [Header("Card")]
     public CardType type;
     public Color cardColor;

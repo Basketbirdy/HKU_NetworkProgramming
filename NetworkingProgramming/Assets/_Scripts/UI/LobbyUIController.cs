@@ -32,6 +32,8 @@ public class LobbyUIController : BaseUIController
         UIManager.Instance.AddReference<TextMeshProUGUI>("player2Text", player2Text);
 
         UIManager.Instance.AddReference<Button>("StartGameButton", startGameButton);
+
+        UIManager.Instance.AddReference<BaseUIController>(GetType().ToString(), this);
     }
 
     public void OnStartGameButtonPressed()
