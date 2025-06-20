@@ -25,8 +25,8 @@ public static class LeaderboardService
 
         // construct score_insert url
         // server id and player 1 id can be deduced from current session variables if someone is logged in
-        string url = APIConnection.BuildUrl("score_insert", $"sessid={APIConnection.sessionId}", $"gameid={APIConnection.gameId}", $"pl2id={entry.player2Id}", $"winnerid={entry.playerWinnerId}",
-            $"score={entry.score}", $"rplayed={entry.roundsPlayed}", $"rtied={entry.roundsTied}", $"crock={entry.rockCount}", $"cpaper={entry.paperCount}", $"cscissors={entry.scissorsCount}");
+        string url = APIConnection.BuildUrl("score_insert", $"sessid={APIConnection.sessionId}", $"gameid={APIConnection.gameId}", $"score={entry.score}", $"pl2id={entry.player2Id}", $"plwid={entry.playerWinnerId}"
+                                            , $"rplayed={entry.roundsPlayed}", $"rtied={entry.roundsTied}", $"crock={entry.rockCount}", $"cpaper={entry.paperCount}", $"cscissors={entry.scissorsCount}");
 
         string response = await APIConnection.MakeWebRequest(url, "1");
 

@@ -33,7 +33,7 @@ public class GameManager : MonoBehaviour
     Dictionary<int, CardSO> cardsOnBoard = new Dictionary<int, CardSO>();
 
     [Header("Match stats")]
-    [SerializeField] private int roundsPlayed;
+    [SerializeField] private int roundsPlayed = 1;
     [SerializeField] private int roundsTied;
     private Dictionary<CardType, int> cardsPlayed = new Dictionary<CardType, int>();
 
@@ -77,7 +77,7 @@ public class GameManager : MonoBehaviour
     {
         if (isClient)
         {
-            client.AddMessageEventListener(OnPlayerJoinedMessage, OnGameStartedMessage, OnRoundStartMessage, OnDrawCardResponseMessage, OnCardPlayedResponseMessage, OnTurnAdvanceMessage, OnRoundResultMessage);
+            client.AddMessageEventListener(OnPlayerJoinedMessage, OnGameStartedMessage, OnRoundStartMessage, OnDrawCardResponseMessage, OnCardPlayedResponseMessage, OnTurnAdvanceMessage, OnRoundResultMessage, OnGameEndMessage);
         }
 
         if (isServer)
@@ -89,7 +89,7 @@ public class GameManager : MonoBehaviour
     {
         if (isClient)
         {
-            client.RemoveMessageEventListener(OnPlayerJoinedMessage, OnGameStartedMessage, OnRoundStartMessage, OnDrawCardResponseMessage, OnCardPlayedResponseMessage, OnTurnAdvanceMessage, OnRoundResultMessage);
+            client.RemoveMessageEventListener(OnPlayerJoinedMessage, OnGameStartedMessage, OnRoundStartMessage, OnDrawCardResponseMessage, OnCardPlayedResponseMessage, OnTurnAdvanceMessage, OnRoundResultMessage, OnGameEndMessage);
         }
 
         if (isServer)
@@ -191,7 +191,7 @@ public class GameManager : MonoBehaviour
             if(_success == 1)
             {
                 cardsOnBoard.Add(playerNumber, msg.card);
-                cardsPlayed[playedCard.Data.type]++;
+                cardsPlayed[msg.card.type]++;
 
                 // advance 
                 OnAdvanceTurn();
@@ -280,6 +280,7 @@ public class GameManager : MonoBehaviour
                 Debug.Log($"[Server] Results; {message}");
                 break;
         }
+
         NotificationMessage roundResultsNotification = new NotificationMessage()
         {
             source = "Server",
@@ -341,6 +342,7 @@ public class GameManager : MonoBehaviour
     private void SendEndRoundMessage()
     {
         scoreData.roundsPlayed = roundsPlayed;
+        scoreData.score = 1;    // no concrete score value used anywhere in the game, can't be 0 for some reason?
         scoreData.rockCount = cardsPlayed[CardType.ROCK];
         scoreData.paperCount = cardsPlayed[CardType.PAPER];
         scoreData.scissorsCount = cardsPlayed[CardType.SCISSORS];
@@ -356,8 +358,21 @@ public class GameManager : MonoBehaviour
             };
             server.SendNetworkMessageAll(endGameNotification);
 
+            int winnerPlayerNumber = 0;
+            if(lives.Key == 1) { scoreData.playerWinnerId = scoreData.player2Id; winnerPlayerNumber = 2; }
+            else { scoreData.playerWinnerId = scoreData.player1Id; winnerPlayerNumber = 1; }
+
             // end game message
             // show results ui
+            GameEndMessage gameEndMessage = new GameEndMessage()
+            {
+                stats = scoreData,
+                player1Name = playerNames[1],
+                player2Name = playerNames[2],
+                winnerName = playerNames[winnerPlayerNumber],
+            };
+            server.SendNetworkMessageAll(gameEndMessage);
+
             return;
         }
 
@@ -368,6 +383,27 @@ public class GameManager : MonoBehaviour
             roundNumber = (uint)roundsPlayed,
         };
         server.SendNetworkMessageAll(newRoundMessage);
+    }
+    private void OnGameEndMessage(NetworkMessage message)
+    {
+        // if network message is not of expected type, return and do nothing
+        if (!TypeUtils.CompareType<GameEndMessage>(message.GetType())) { return; }
+        var msg = message as GameEndMessage;
+
+        if (isClient)
+        {
+            var endGameUI = UIManager.Instance.GetUIControllerAs<EndGameUIController>("EndGameUIController");
+            endGameUI.PopulateStats(msg.stats, msg.player1Name, msg.player2Name, msg.winnerName);
+            endGameUI.ShowCanvas();
+            UIManager.Instance.DisableButton("UploadButton");
+
+            UIManager.Instance.GetUIControllerAs<GameUIController>("GameUIController").HideCanvas();
+        }
+
+        if (isServer)
+        {
+            UIManager.Instance.EnableButton("UploadButton");
+        }
     }
     private void OnCardPlayedResponseMessage(NetworkMessage message)
     {

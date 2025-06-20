@@ -29,6 +29,7 @@ public enum NetworkMessageType
     GAME_READYTOSTART,
     GAME_START,
     GAME_STARTED,
+    GAME_END,
 
     ROUND_START,
     ROUND_RESULTS,
@@ -60,6 +61,7 @@ public static class NetworkMessageInfo
         {NetworkMessageType.GAME_READYTOSTART, typeof(GameReadyToStartMessage) },
         {NetworkMessageType.GAME_START, typeof(StartGameMessage) },
         {NetworkMessageType.GAME_STARTED, typeof(GameStartedMessage) },
+        {NetworkMessageType.GAME_END, typeof(GameEndMessage) },
 
         {NetworkMessageType.ROUND_START, typeof(RoundStartMessage) },
         {NetworkMessageType.ROUND_RESULTS, typeof(RoundResultsMessage) },

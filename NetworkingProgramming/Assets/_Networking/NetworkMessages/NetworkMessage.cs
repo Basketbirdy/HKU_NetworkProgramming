@@ -22,6 +22,37 @@ public abstract class NetworkMessage
         Id = reader.ReadUInt();
     }
 
+    public void WriteScoreEntry(ref DataStreamWriter writer, ScoreEntry scoreEntry)
+    {
+        writer.WriteUInt((uint)scoreEntry.gameId);
+        writer.WriteUInt((uint)scoreEntry.score);
+        writer.WriteUInt((uint)scoreEntry.player1Id);
+        writer.WriteUInt((uint)scoreEntry.player2Id);
+        writer.WriteUInt((uint)scoreEntry.playerWinnerId);
+        writer.WriteUInt((uint)scoreEntry.roundsPlayed);
+        writer.WriteUInt((uint)scoreEntry.roundsTied);
+        writer.WriteUInt((uint)scoreEntry.rockCount);
+        writer.WriteUInt((uint)scoreEntry.paperCount);
+        writer.WriteUInt((uint)scoreEntry.scissorsCount);
+    }
+    public ScoreEntry ReadScoreEntry(ref DataStreamReader reader)
+    {
+        ScoreEntry scoreEntry = new ScoreEntry()
+        {
+            gameId = (int)reader.ReadUInt(),
+            score = (int)reader.ReadUInt(),
+            player1Id = (int)reader.ReadUInt(),
+            player2Id = (int)reader.ReadUInt(),
+            playerWinnerId = (int)reader.ReadUInt(),
+            roundsPlayed = (int)reader.ReadUInt(),
+            roundsTied = (int)reader.ReadUInt(),
+            rockCount = (int)reader.ReadUInt(),
+            paperCount = (int)reader.ReadUInt(),
+            scissorsCount = (int)reader.ReadUInt(),
+        };
+        return scoreEntry;
+    }
+
     public void WriteVector3(ref DataStreamWriter writer, Vector3 vector)
     {
         writer.WriteUInt((uint)vector.x);

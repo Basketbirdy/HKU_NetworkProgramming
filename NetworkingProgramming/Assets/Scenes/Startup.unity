@@ -3122,10 +3122,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: m_AccountManager
       objectReference: {fileID: 0}
-    - target: {fileID: 8586524136803404821, guid: 3a8baedb8d38b034791c8efbadcb066f, type: 3}
-      propertyPath: requiresLogin
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

@@ -44,7 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92896225ec4094c4586b008c3baa0229, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  requiresLogin: 0
+  requiresLogin: 1
   userData:
     id: -1
     email: 
