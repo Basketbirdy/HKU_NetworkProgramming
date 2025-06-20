@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Unity.Collections;
 using UnityEngine;
@@ -81,5 +82,19 @@ public abstract class NetworkMessage
     public CardSO ReadCardSO(ref DataStreamReader reader)
     {
         return NetworkManager.Instance.GetCard((int)reader.ReadUInt());
+    }
+
+    public void WriteBoolean(ref DataStreamWriter writer, bool boolean)
+    {
+        uint value;
+        if (boolean) { value = 1; }
+        else { value = 0; }
+        writer.WriteUInt(value);
+    }
+    public bool ReadBoolean(ref DataStreamReader reader)
+    {
+        uint value = reader.ReadUInt();
+        if (value == 1) { return true; }
+        else { return false; }
     }
 }

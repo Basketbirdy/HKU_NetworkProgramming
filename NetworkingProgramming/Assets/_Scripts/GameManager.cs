@@ -27,9 +27,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int startLifeCount = 3;
 
     [Header("Match data")]
-    [SerializeField] private int activePlayer;
+    private int activePlayer;
     private int currentRound;
     public ScoreEntry scoreData;
+    Dictionary<int, CardSO> cardsOnBoard = new Dictionary<int, CardSO>();
 
     [Header("Match stats")]
     [SerializeField] private int roundsPlayed;
@@ -53,7 +54,7 @@ public class GameManager : MonoBehaviour
 
     private bool hasPlayedCard;
     private Card playedCard;
-
+    private Card opponentPlayedCard;
 
     private void Awake()
     {
@@ -68,6 +69,7 @@ public class GameManager : MonoBehaviour
             server = FindAnyObjectByType<ServerBehaviour>();
             
             scoreData = new ScoreEntry();
+            scoreData.gameId = APIConnection.gameId;
             scoreData.player1Id = AccountManager.Instance.User_Id;
         }
     }
@@ -75,7 +77,7 @@ public class GameManager : MonoBehaviour
     {
         if (isClient)
         {
-            client.AddMessageEventListener(OnPlayerJoinedMessage, OnGameStartedMessage, OnRoundStartMessage, OnDrawCardResponseMessage, OnCardPlayedResponseMessage, OnTurnAdvanceMessage);
+            client.AddMessageEventListener(OnPlayerJoinedMessage, OnGameStartedMessage, OnRoundStartMessage, OnDrawCardResponseMessage, OnCardPlayedResponseMessage, OnTurnAdvanceMessage, OnRoundResultMessage);
         }
 
         if (isServer)
@@ -87,7 +89,7 @@ public class GameManager : MonoBehaviour
     {
         if (isClient)
         {
-            client.RemoveMessageEventListener(OnPlayerJoinedMessage, OnGameStartedMessage, OnRoundStartMessage, OnDrawCardResponseMessage, OnCardPlayedResponseMessage, OnTurnAdvanceMessage);
+            client.RemoveMessageEventListener(OnPlayerJoinedMessage, OnGameStartedMessage, OnRoundStartMessage, OnDrawCardResponseMessage, OnCardPlayedResponseMessage, OnTurnAdvanceMessage, OnRoundResultMessage);
         }
 
         if (isServer)
@@ -188,6 +190,7 @@ public class GameManager : MonoBehaviour
 
             if(_success == 1)
             {
+                cardsOnBoard.Add(playerNumber, msg.card);
                 cardsPlayed[playedCard.Data.type]++;
 
                 // advance 
@@ -202,6 +205,7 @@ public class GameManager : MonoBehaviour
         int newActivePlayer = activePlayer + 1;
         if (newActivePlayer > playerNames.Count)
         {
+            activePlayer = 1;
             OnEndRound();
             return;
         }
@@ -241,7 +245,129 @@ public class GameManager : MonoBehaviour
     }
     private void OnEndRound()
     {
-        Debug.Log("Ending round");
+
+        // determine winner
+        string[] notifStrings = new string[2];
+        int i = 0;
+        foreach (KeyValuePair<int, CardSO> pair in cardsOnBoard)
+        {
+            Debug.Log($"[Server] cards played: player {pair.Key}, {pair.Value.type}");
+            notifStrings[i] = $"{playerNames[pair.Key]} played {pair.Value.type}";
+            i++;
+        }
+        string message = string.Join(",", notifStrings);
+        NotificationMessage cardsPlayedNotification = new NotificationMessage()
+        {
+            source = "Server",
+            message = message,
+        };
+        server.SendNetworkMessageAll(cardsPlayedNotification);
+
+        int winnerPlayerNumber = RockPaperScissore(1, 2);
+        switch (winnerPlayerNumber)
+        {
+            case 0:
+                message = "Game tied!";
+                Debug.Log($"[Server] Results; {message}");
+                scoreData.roundsTied++;
+                break;
+            case 1: 
+                message = $"player {winnerPlayerNumber} '{playerNames[winnerPlayerNumber]}' won!";
+                Debug.Log($"[Server] Results; {message}");
+                break;
+            case 2:
+                message = $"player {winnerPlayerNumber} '{playerNames[winnerPlayerNumber]}' won!";
+                Debug.Log($"[Server] Results; {message}");
+                break;
+        }
+        NotificationMessage roundResultsNotification = new NotificationMessage()
+        {
+            source = "Server",
+            message = message,
+        };
+        server.SendNetworkMessageAll(roundResultsNotification);
+
+        // send each player their results
+        foreach(KeyValuePair<int, string> pair in playerNames)
+        {
+            if(pair.Key != winnerPlayerNumber && winnerPlayerNumber != 0) 
+            { 
+                playerLives[pair.Key] = playerLives[pair.Key] - 1;
+            }
+            RoundResultsMessage roundResultMessage = new RoundResultsMessage()
+            {
+                playerNumber = (uint)pair.Key,
+                winnerPlayerNumber = (uint)winnerPlayerNumber,
+                newLifeCount = (uint)playerLives[pair.Key],
+            };
+            NetworkConnection clientConnection = GetConnectionByPlayerNumber(pair.Key);
+
+            server.SendNetworkMessageOne(clientConnection, roundResultMessage);
+        }
+
+        Invoke("SendEndRoundMessage", 3f);
+    }
+    private void OnRoundResultMessage(NetworkMessage message)
+    {
+        // if network message is not of expected type, return and do nothing
+        if (!TypeUtils.CompareType<RoundResultsMessage>(message.GetType())) { return; }
+        var msg = message as RoundResultsMessage;
+
+        if (isClient)
+        {
+            playedCard.gameObject.transform.rotation = Quaternion.Euler(0, 0, 0);
+            opponentPlayedCard.gameObject.transform.rotation = Quaternion.Euler(0, 0, 0);
+
+            if(msg.playerNumber == client.playerNumber)
+            {
+                int winnerPlayerNumber = (int)msg.winnerPlayerNumber;
+                var gameUI = UIManager.Instance.GetUIControllerAs<GameUIController>("GameUIController");
+                if(winnerPlayerNumber == 0)
+                {
+                    gameUI.SetStateIndicatorText("round tied!");
+                }
+                else if(winnerPlayerNumber == client.playerNumber)
+                {
+                    gameUI.SetStateIndicatorText("round won!");
+                }
+                else
+                {
+                    gameUI.SetStateIndicatorText("round lost!");
+                }
+                gameUI.SetLifeCount((int)msg.newLifeCount);
+            }
+        }
+    }
+    private void SendEndRoundMessage()
+    {
+        scoreData.roundsPlayed = roundsPlayed;
+        scoreData.rockCount = cardsPlayed[CardType.ROCK];
+        scoreData.paperCount = cardsPlayed[CardType.PAPER];
+        scoreData.scissorsCount = cardsPlayed[CardType.SCISSORS];
+
+        foreach(KeyValuePair<int, int> lives in playerLives)
+        {
+            if(lives.Value > 0) { continue; }
+
+            NotificationMessage endGameNotification = new NotificationMessage()
+            {
+                source = "Server",
+                message = $"Game ended! player '{playerNames[lives.Key]}' lost all lives",
+            };
+            server.SendNetworkMessageAll(endGameNotification);
+
+            // end game message
+            // show results ui
+            return;
+        }
+
+        roundsPlayed++;
+        RoundStartMessage newRoundMessage = new RoundStartMessage()
+        {
+            activePlayer = (uint)activePlayer,
+            roundNumber = (uint)roundsPlayed,
+        };
+        server.SendNetworkMessageAll(newRoundMessage);
     }
     private void OnCardPlayedResponseMessage(NetworkMessage message)
     {
@@ -275,7 +401,8 @@ public class GameManager : MonoBehaviour
                 if (success)
                 {
                     var cardObj = cardFactory.CreateCard(msg.card);
-                    cardHolder.ShowTheirCard(cardObj.GetComponent<Card>());
+                    opponentPlayedCard = cardObj.GetComponent<Card>();
+                    cardHolder.ShowTheirCard(opponentPlayedCard);
                     cardObj.transform.rotation = Quaternion.Euler(0, 180, 0);
                 }
             }
@@ -524,14 +651,29 @@ public class GameManager : MonoBehaviour
 
         if(isClient)
         {
+            // clear any existing cards on the board
+            cardsOnBoard.Clear();
+            if(playedCard != null && opponentPlayedCard != null)
+            {
+                Destroy(playedCard.gameObject);
+                Destroy(opponentPlayedCard.gameObject);
+            }
+
             currentRound = (int)msg.roundNumber;
             myTurn = msg.activePlayer == client.playerNumber;
 
-            if (myTurn) { UIManager.Instance.GetUIControllerAs<GameUIController>("GameUIController").SetStateIndicatorDrawCardText(); }
+            var gameUI = UIManager.Instance.GetUIControllerAs<GameUIController>("GameUIController");
+            if (myTurn) 
+            { 
+                gameUI.SetStateIndicatorDrawCardText(); 
+                UIManager.Instance.EnableButton("DrawButton");
+            }
             else
             {
+                gameUI.SetStateIndicatorWaitingText(myTurn);
                 UIManager.Instance.DisableButton("DrawButton");
             }
+            gameUI.SetRoundTitleText(currentRound);
         }
 
         if (isServer)
@@ -540,6 +682,31 @@ public class GameManager : MonoBehaviour
         }
     }
 
+
+    public int RockPaperScissore(int player1, int player2)
+    {
+        CardType p1 = cardsOnBoard[player1].type;
+        CardType p2 = cardsOnBoard[player2].type;
+
+        if(p1 == p2) { return 0; }
+
+        if(p1 == CardType.ROCK)
+        {
+            if (p2 == CardType.PAPER) { return player2; }
+            else { return player1; };
+        }
+        if(p1 == CardType.PAPER)
+        {
+            if (p2 == CardType.SCISSORS) { return player2; }
+            else { return player1; }
+        }
+        if (p1 == CardType.SCISSORS)
+        {
+            if (p2 == CardType.ROCK) { return player2; }
+            else { return player1; }
+        }
+        return 0;
+    }
     public NetworkConnection GetConnectionByPlayerNumber(int playerNumber)
     {
         return server.playerNumbers.Single(s => s.Value == playerNumber).Key;

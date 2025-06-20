@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 
   type: 2
-  cardColor: {r: 1, g: 0.7783019, b: 0.7783019, a: 1}
+  cardColor: {r: 1, g: 1, b: 1, a: 1}
   imageData:
     image: {fileID: 21300000, guid: 9fade944ee08a1e4e849d478785169dc, type: 3}
     offset: {x: 0.2, y: 0, z: 0}

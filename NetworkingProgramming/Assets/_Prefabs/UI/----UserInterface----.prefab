@@ -135,6 +135,10 @@ MonoBehaviour:
   stateIndicatorText: {fileID: 6007155262253310273}
   roundTitleText: {fileID: 6326387294557091752}
   drawButton: {fileID: 1123518456928747260}
+  lifeImages:
+  - {fileID: 4967825740140572184}
+  - {fileID: 2316542058899456472}
+  - {fileID: 3065200911903666449}
 --- !u!1 &935878457355000512
 GameObject:
   m_ObjectHideFlags: 0
@@ -1963,7 +1967,7 @@ MonoBehaviour:
   prefab: {fileID: 3153162410583695537, guid: f13ba741b17b7cd42a376351c9f38e9c, type: 3}
   container: {fileID: 8106873617554392378}
   maxQueueSize: 4
-  showTime: 5
+  showTime: 10
 --- !u!225 &3211304416830964960
 CanvasGroup:
   m_ObjectHideFlags: 0
