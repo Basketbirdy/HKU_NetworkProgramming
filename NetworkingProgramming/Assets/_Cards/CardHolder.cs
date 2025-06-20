@@ -47,6 +47,10 @@ public class CardHolder : MonoBehaviour
 
     public void ShowTheirCard(Card card)
     {
+        Debug.Log(card);
+        Debug.Log(card.gameObject);
+        Debug.Log(card.gameObject.transform);
+        Debug.Log(theirCard);
         card.gameObject.transform.parent = theirCard;
         card.gameObject.transform.localPosition = Vector3.zero;
         myCardObj = card.gameObject;

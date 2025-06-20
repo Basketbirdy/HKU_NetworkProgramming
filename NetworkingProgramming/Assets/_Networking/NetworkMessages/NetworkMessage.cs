@@ -73,4 +73,13 @@ public abstract class NetworkMessage
         }
         return new CardStack(cards);
     }
+
+    public void WriteCardSO(ref DataStreamWriter writer, CardSO card)
+    {
+        writer.WriteUInt((uint)card.type);
+    }
+    public CardSO ReadCardSO(ref DataStreamReader reader)
+    {
+        return NetworkManager.Instance.GetCard((int)reader.ReadUInt());
+    }
 }

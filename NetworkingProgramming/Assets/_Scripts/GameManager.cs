@@ -66,13 +66,16 @@ public class GameManager : MonoBehaviour
         if (isServer)
         {
             server = FindAnyObjectByType<ServerBehaviour>();
+            
+            scoreData = new ScoreEntry();
+            scoreData.player1Id = AccountManager.Instance.User_Id;
         }
     }
     private void OnEnable()
     {
         if (isClient)
         {
-            client.AddMessageEventListener(OnPlayerJoinedMessage, OnGameStartedMessage, OnRoundStartMessage, OnDrawCardResponseMessage, OnCardPlayedResponseMessage);
+            client.AddMessageEventListener(OnPlayerJoinedMessage, OnGameStartedMessage, OnRoundStartMessage, OnDrawCardResponseMessage, OnCardPlayedResponseMessage, OnTurnAdvanceMessage);
         }
 
         if (isServer)
@@ -84,7 +87,7 @@ public class GameManager : MonoBehaviour
     {
         if (isClient)
         {
-            client.RemoveMessageEventListener(OnPlayerJoinedMessage, OnGameStartedMessage, OnRoundStartMessage, OnDrawCardResponseMessage, OnCardPlayedResponseMessage);
+            client.RemoveMessageEventListener(OnPlayerJoinedMessage, OnGameStartedMessage, OnRoundStartMessage, OnDrawCardResponseMessage, OnCardPlayedResponseMessage, OnTurnAdvanceMessage);
         }
 
         if (isServer)
@@ -176,11 +179,69 @@ public class GameManager : MonoBehaviour
 
             var cardPlayedResponseMessage = new CardPlayedResponseMessage()
             {
-                success = _success, // fail
+                success = _success,
+                activePlayer = (uint)activePlayer,
+                card = msg.card,
             };
 
-            server.SendNetworkMessageOne(clientConnection, cardPlayedResponseMessage);
+            server.SendNetworkMessageAll(cardPlayedResponseMessage);
+
+            if(_success == 1)
+            {
+                cardsPlayed[playedCard.Data.type]++;
+
+                // advance 
+                OnAdvanceTurn();
+            }
         }
+    }
+    private void OnAdvanceTurn()
+    {
+        Debug.Log("Advancing turn");
+
+        int newActivePlayer = activePlayer + 1;
+        if (newActivePlayer > playerNames.Count)
+        {
+            OnEndRound();
+            return;
+        }
+        else { activePlayer = newActivePlayer; }
+
+        TurnAdvanceMessage turnAdvanceMessage = new TurnAdvanceMessage()
+        {
+            activePlayer = (uint)activePlayer,
+        };
+        server.SendNetworkMessageAll(turnAdvanceMessage);
+    }
+    private void OnTurnAdvanceMessage(NetworkMessage message)
+    {
+        // if network message is not of expected type, return and do nothing
+        if (!TypeUtils.CompareType<TurnAdvanceMessage>(message.GetType())) { return; }
+        var msg = message as TurnAdvanceMessage;
+
+        if (isClient)
+        {
+            myTurn = msg.activePlayer == client.playerNumber;
+
+            if (myTurn) 
+            {
+                UIManager.Instance.GetUIControllerAs<GameUIController>("GameUIController").SetStateIndicatorDrawCardText(); 
+                UIManager.Instance.EnableButton("DrawButton");
+            }
+            else
+            {
+                UIManager.Instance.DisableButton("DrawButton");
+            }
+        }
+
+        if (isServer)
+        {
+
+        }
+    }
+    private void OnEndRound()
+    {
+        Debug.Log("Ending round");
     }
     private void OnCardPlayedResponseMessage(NetworkMessage message)
     {
@@ -190,19 +251,33 @@ public class GameManager : MonoBehaviour
 
         if(isClient)
         {
+            myTurn = msg.activePlayer == client.playerNumber;
             bool success = msg.success == 0 ? false : true;
 
-            if (success)
+            if (myTurn)
             {
-                hand.Remove(playedCard.Data);
-                cardHolder.PlayCard(playedCard);
 
-                drawnCard = false;
-                UIManager.Instance.DisableButton("DrawButton");
+                if (success)
+                {
+                    hand.Remove(playedCard.Data);
+                    cardHolder.PlayCard(playedCard);
+
+                    drawnCard = false;
+                    UIManager.Instance.DisableButton("DrawButton");
+                }
+                else
+                {
+                    hasPlayedCard = false;
+                }
             }
             else
             {
-                hasPlayedCard = false;
+                if (success)
+                {
+                    var cardObj = cardFactory.CreateCard(msg.card);
+                    cardHolder.ShowTheirCard(cardObj.GetComponent<Card>());
+                    cardObj.transform.rotation = Quaternion.Euler(0, 180, 0);
+                }
             }
         }
     }
@@ -235,6 +310,7 @@ public class GameManager : MonoBehaviour
 
             DrawCardResponseMessage drawCardResponseMessage = new DrawCardResponseMessage()
             {
+                playerNumber = (uint)msg.playerNumber,
                 cardTypeId = (uint)card.type,
             };
 
@@ -272,6 +348,7 @@ public class GameManager : MonoBehaviour
 
         if (isClient)
         {
+            scoreData.player2Id = (int)msg.userId;
             UpdatePlayerList(msg.playerNames);
             
             var notificationController = UIManager.Instance.GetUIControllerAs<NotificationUIController>("NotificationUIController");
@@ -451,6 +528,10 @@ public class GameManager : MonoBehaviour
             myTurn = msg.activePlayer == client.playerNumber;
 
             if (myTurn) { UIManager.Instance.GetUIControllerAs<GameUIController>("GameUIController").SetStateIndicatorDrawCardText(); }
+            else
+            {
+                UIManager.Instance.DisableButton("DrawButton");
+            }
         }
 
         if (isServer)

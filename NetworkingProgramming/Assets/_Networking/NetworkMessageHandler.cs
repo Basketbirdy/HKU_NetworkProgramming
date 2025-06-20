@@ -37,6 +37,9 @@ public enum NetworkMessageType
     CARD_DRAW_RESPONSE,
     CARD_PLAYED,
     CARD_PLAYED_RESPONSE,
+
+    TURN_END,
+    TURN_ADVANCE,
 }
 
 public static class NetworkMessageInfo
@@ -64,6 +67,9 @@ public static class NetworkMessageInfo
         {NetworkMessageType.CARD_DRAW_RESPONSE, typeof(DrawCardResponseMessage) },
         {NetworkMessageType.CARD_PLAYED, typeof(CardPlayedMessage) },
         {NetworkMessageType.CARD_PLAYED_RESPONSE, typeof(CardPlayedResponseMessage) },
+
+        {NetworkMessageType.TURN_END, typeof(TurnEndMessage) },
+        {NetworkMessageType.TURN_ADVANCE, typeof(TurnAdvanceMessage) },
     };
 }
 

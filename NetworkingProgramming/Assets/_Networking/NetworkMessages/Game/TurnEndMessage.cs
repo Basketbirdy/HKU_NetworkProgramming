@@ -1,19 +1,17 @@
 using Unity.Collections;
 using UnityEngine;
 
-public class DrawCardResponseMessage : NetworkMessage
+public class TurnEndMessage : NetworkMessage
 {
-    public override NetworkMessageType Type => NetworkMessageType.CARD_DRAW_RESPONSE;
+    public override NetworkMessageType Type => NetworkMessageType.TURN_END;
 
     public uint playerNumber;
-    public uint cardTypeId;
 
     public override void Encode(ref DataStreamWriter writer)
     {
         base.Encode(ref writer);
 
         writer.WriteUInt(playerNumber);
-        writer.WriteUInt(cardTypeId);
     }
 
     public override void Decode(ref DataStreamReader reader)
@@ -21,6 +19,5 @@ public class DrawCardResponseMessage : NetworkMessage
         base.Decode(ref reader);
 
         playerNumber = reader.ReadUInt();
-        cardTypeId = reader.ReadUInt();
     }
 }
