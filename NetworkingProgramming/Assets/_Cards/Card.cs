@@ -21,4 +21,9 @@ public class Card : MonoBehaviour, IInitializable<CardSO>
         image.transform.rotation = Quaternion.Euler(data.imageData.rotation);
         image.transform.localScale = data.imageData.scale;
     }
+
+    public void Disable()
+    {
+        GetComponent<BoxCollider>().enabled = false;
+    }
 }

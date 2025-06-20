@@ -31,7 +31,12 @@ public enum NetworkMessageType
     GAME_STARTED,
 
     ROUND_START,
-    ROUND_END
+    ROUND_END,
+
+    CARD_DRAW,
+    CARD_DRAW_RESPONSE,
+    CARD_PLAYED,
+    CARD_PLAYED_RESPONSE,
 }
 
 public static class NetworkMessageInfo
@@ -54,6 +59,11 @@ public static class NetworkMessageInfo
         {NetworkMessageType.GAME_STARTED, typeof(GameStartedMessage) },
 
         {NetworkMessageType.ROUND_START, typeof(RoundStartMessage) },
+
+        {NetworkMessageType.CARD_DRAW, typeof(DrawCardMessage) },
+        {NetworkMessageType.CARD_DRAW_RESPONSE, typeof(DrawCardResponseMessage) },
+        {NetworkMessageType.CARD_PLAYED, typeof(CardPlayedMessage) },
+        {NetworkMessageType.CARD_PLAYED_RESPONSE, typeof(CardPlayedResponseMessage) },
     };
 }
 

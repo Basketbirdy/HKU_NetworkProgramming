@@ -8,6 +8,11 @@ public class CardHolder : MonoBehaviour
     [SerializeField] private Vector2 totalOffset;
     [SerializeField] private float cardWidth;
     [SerializeField] private float spacing;
+    [Space]
+    [SerializeField] private Transform myCard;
+    [SerializeField] private Transform theirCard;
+    private GameObject myCardObj;
+    private GameObject theirCardObj;
 
     public void AddCard(GameObject obj)
     {
@@ -29,6 +34,23 @@ public class CardHolder : MonoBehaviour
         }
 
         ReorderCards();
+    }
+
+    public void PlayCard(Card card)
+    {
+        RemoveCard(card.gameObject);
+        card.gameObject.transform.parent = myCard;
+        card.gameObject.transform.localPosition = Vector3.zero;
+        myCardObj = card.gameObject;
+        card.Disable();
+    }
+
+    public void ShowTheirCard(Card card)
+    {
+        card.gameObject.transform.parent = theirCard;
+        card.gameObject.transform.localPosition = Vector3.zero;
+        myCardObj = card.gameObject;
+        card.Disable();
     }
 
     private void ReorderCards()

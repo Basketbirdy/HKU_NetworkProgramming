@@ -28,6 +28,12 @@ public class CardStack
         return true;
     }
 
+    public void Remove(CardSO card)
+    {
+        int index = stack.IndexOf(card);
+        stack.RemoveAtSwapBack(index);
+    }
+
     public void Add(CardSO card)
     {
         stack.Add(card);

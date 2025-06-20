@@ -50,7 +50,7 @@ MonoBehaviour:
   cardHolder: {fileID: 0}
   minimumPlayers: 2
   defaultDeck: {fileID: 11400000, guid: eb792259ff93d4143a5815f99660f604, type: 2}
-  startCardCount: 3
+  startCardCount: 2
   startLifeCount: 3
   activePlayer: 0
   scoreData:

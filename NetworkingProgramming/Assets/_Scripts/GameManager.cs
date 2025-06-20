@@ -23,7 +23,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private int minimumPlayers = 2;
     [SerializeField] private DeckSO defaultDeck;
     [Space]
-    [SerializeField] private int startCardCount = 3;
+    [SerializeField] private int startCardCount = 2;
     [SerializeField] private int startLifeCount = 3;
 
     [Header("Match data")]
@@ -49,6 +49,10 @@ public class GameManager : MonoBehaviour
 
     private CardStack hand;
     private bool myTurn;
+    private bool drawnCard;
+
+    private bool hasPlayedCard;
+    private Card playedCard;
 
 
     private void Awake()
@@ -68,24 +72,24 @@ public class GameManager : MonoBehaviour
     {
         if (isClient)
         {
-            client.AddMessageEventListener(OnPlayerJoinedMessage, OnGameStartedMessage, OnRoundStartMessage);
+            client.AddMessageEventListener(OnPlayerJoinedMessage, OnGameStartedMessage, OnRoundStartMessage, OnDrawCardResponseMessage, OnCardPlayedResponseMessage);
         }
 
         if (isServer)
         {
-            server.AddMessageEventListener(OnStartGameMessage);
+            server.AddMessageEventListener(OnStartGameMessage, OnDrawCardMessage, OnCardPlayedMessage);
         }
     }
     private void OnDisable()
     {
         if (isClient)
         {
-            client.RemoveMessageEventListener(OnPlayerJoinedMessage, OnGameStartedMessage, OnRoundStartMessage);
+            client.RemoveMessageEventListener(OnPlayerJoinedMessage, OnGameStartedMessage, OnRoundStartMessage, OnDrawCardResponseMessage, OnCardPlayedResponseMessage);
         }
 
         if (isServer)
         {
-            server.RemoveMessageEventListener(OnStartGameMessage);
+            server.RemoveMessageEventListener(OnStartGameMessage, OnDrawCardMessage, OnCardPlayedMessage);
         }
     }
 
@@ -109,7 +113,7 @@ public class GameManager : MonoBehaviour
             if (myTurn)
             {
                 // await input :)
-                if (Input.GetKeyDown(KeyCode.Mouse0))
+                if (Input.GetKeyDown(KeyCode.Mouse0) && drawnCard && !playedCard)
                 {
                     onClick(out RaycastHit hit);
                 }
@@ -130,8 +134,132 @@ public class GameManager : MonoBehaviour
             var card = hit.collider.GetComponent<Card>();
             if (card == null) { return false; }
             Debug.Log($"hit card {card.Data.id}");
+
+            // TODO - Play this card and send advance turn message
+            CardPlayedMessage cardPlayedMessage = new CardPlayedMessage()
+            {
+                playerNumber = (uint)client.playerNumber,
+                card = card.Data,
+            };
+            client.SendNetworkMessage(cardPlayedMessage);
+
+            hasPlayedCard = true;
+            playedCard = card;
+            //hand.Remove(card.Data);
+            //cardHolder.PlayCard(card.gameObject);
+
+            //drawnCard = false;
+            //UIManager.Instance.DisableButton("DrawButton");
         }
         return true;
+    }
+    private void OnCardPlayedMessage(NetworkMessage message)
+    {
+        // if network message is not of expected type, return and do nothing
+        if (!TypeUtils.CompareType<CardPlayedMessage>(message.GetType())) { return; }
+        var msg = message as CardPlayedMessage;
+
+        int playerNumber = (int)msg.playerNumber;
+        NetworkConnection clientConnection = GetConnectionByPlayerNumber(playerNumber);
+
+        if (isServer)
+        {
+            uint _success;
+            if(!playerHands.ContainsKey(playerNumber) || playerHands[playerNumber] == null)
+            {
+                _success = 0;
+            }
+            else
+            {
+                _success = 1;
+            }
+
+            var cardPlayedResponseMessage = new CardPlayedResponseMessage()
+            {
+                success = _success, // fail
+            };
+
+            server.SendNetworkMessageOne(clientConnection, cardPlayedResponseMessage);
+        }
+    }
+    private void OnCardPlayedResponseMessage(NetworkMessage message)
+    {
+        // if network message is not of expected type, return and do nothing
+        if (!TypeUtils.CompareType<CardPlayedResponseMessage>(message.GetType())) { return; }
+        var msg = message as CardPlayedResponseMessage;
+
+        if(isClient)
+        {
+            bool success = msg.success == 0 ? false : true;
+
+            if (success)
+            {
+                hand.Remove(playedCard.Data);
+                cardHolder.PlayCard(playedCard);
+
+                drawnCard = false;
+                UIManager.Instance.DisableButton("DrawButton");
+            }
+            else
+            {
+                hasPlayedCard = false;
+            }
+        }
+    }
+
+    public void OnDrawCardPressed()
+    {
+        // send draw card request message to server
+        // await response message with cardSO
+        if(drawnCard) { return; }
+
+        Debug.Log("Drawing card");
+        DrawCardMessage drawCardMessage = new DrawCardMessage()
+        {
+            playerNumber = (uint)client.playerNumber,
+        };
+
+        client.SendNetworkMessage(drawCardMessage);
+    }
+    private void OnDrawCardMessage(NetworkMessage message)
+    {
+        // if network message is not of expected type, return and do nothing
+        if (!TypeUtils.CompareType<DrawCardMessage>(message.GetType())) { return; }
+        var msg = message as DrawCardMessage;
+
+        if (isServer)
+        {
+            int playerNumber = (int)msg.playerNumber;
+            playerDecks[playerNumber].Draw(out CardSO card);
+            playerDiscards[playerNumber].Add(card);
+
+            DrawCardResponseMessage drawCardResponseMessage = new DrawCardResponseMessage()
+            {
+                cardTypeId = (uint)card.type,
+            };
+
+            NetworkConnection clientConnection = GetConnectionByPlayerNumber(playerNumber);
+            server.SendNetworkMessageOne(clientConnection, drawCardResponseMessage);
+        }
+    }
+    private void OnDrawCardResponseMessage(NetworkMessage message)
+    {
+        // if network message is not of expected type, return and do nothing
+        if (!TypeUtils.CompareType<DrawCardResponseMessage>(message.GetType())) { return; }
+        var msg = message as DrawCardResponseMessage;
+
+        if (isClient)
+        {
+            // add card to holder
+            var card = NetworkManager.Instance.GetCard((int)msg.cardTypeId);
+            hand.Add(card);
+            cardHolder.AddCard(cardFactory.CreateCard(card));
+
+            drawnCard = true;
+
+            UIManager.Instance.DisableButton("DrawButton");
+            UIManager.Instance.GetUIControllerAs<GameUIController>("GameUIController").SetStateIndicatorWaitingText(myTurn);
+        }
     }
 
     private void OnPlayerJoinedMessage(NetworkMessage message)
@@ -232,7 +360,7 @@ public class GameManager : MonoBehaviour
             playerHands.Add(playerNumber, new CardStack(newHand));
 
             // set player discard pile
-            playerDiscards.Add(playerNumber, new CardStack(null));
+            playerDiscards.Add(playerNumber, new CardStack(new List<CardSO>()));
 
             // set players lives
             playerLives.Add(playerNumber, startLifeCount);
@@ -285,9 +413,12 @@ public class GameManager : MonoBehaviour
         if (!TypeUtils.CompareType<GameStartedMessage>(message.GetType())) { return; }
         var msg = message as GameStartedMessage;
 
+
         if (isClient)
         {
-            Debug.Log($"[Client] received game started message! hand: {msg.hand.stack[0]}, {msg.hand.stack[1]}, {msg.hand.stack[2]}");
+            hand = msg.hand;
+            
+            Debug.Log($"[Client] received game started message! hand: {msg.hand.stack[0]}, {msg.hand.stack[1]}");
             // disable lobby ui
             UIManager.Instance.GetUIControllerAs<LobbyUIController>("LobbyUIController").HideCanvas();
             // enable game ui
@@ -319,12 +450,17 @@ public class GameManager : MonoBehaviour
             currentRound = (int)msg.roundNumber;
             myTurn = msg.activePlayer == client.playerNumber;
 
-            UIManager.Instance.GetUIControllerAs<GameUIController>("GameUIController").SetStateIndicatorText(myTurn);
+            if (myTurn) { UIManager.Instance.GetUIControllerAs<GameUIController>("GameUIController").SetStateIndicatorDrawCardText(); }
         }
 
         if (isServer)
         {
             
         }
+    }
+
+    public NetworkConnection GetConnectionByPlayerNumber(int playerNumber)
+    {
+        return server.playerNumbers.Single(s => s.Value == playerNumber).Key;
     }
 }

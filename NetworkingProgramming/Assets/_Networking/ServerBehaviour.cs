@@ -111,7 +111,7 @@ public class ServerBehaviour : MonoBehaviour
                     }
                     else
                     {
-                        Debug.LogError($"[Server] no message type identified!");
+                        Debug.LogWarning($"[Server] no message type identified!");
                     }
 
                     EventHandler<NetworkMessage>.InvokeEvent(GlobalEvents.MESSAGE_SERVER_RECEIVED, msg);
