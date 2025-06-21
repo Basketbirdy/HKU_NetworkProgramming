@@ -7,14 +7,14 @@ using UnityEngine.Networking;
 public static class APIConnection
 {
     // should this be in here? is this dangerous?
-    public const string urlHeader = "studenthome.hku.nl/~daniel.berghorst/";
-    public const string serverLogin = "server_login";
+    public const string urlHeader = "";       // removed due to security
+    public const string serverLogin = "";     // removed due to security
 
     public const int gameId = 1;
 
     // should this be in here? is this dangerous?
     public static int serverId = 1;                         
-    public static string serverPassword = "Password1";
+    public static string serverPassword = "";    // removed due to security
 
     public static string sessionId;
     public static Dictionary<string, string> responseCodeHeader = new Dictionary<string, string>()
