@@ -5,14 +5,14 @@ using UnityEngine;
 
 public class ClientBehaviour : MonoBehaviour
 {
-    public static ClientBehaviour Instance { get; private set; }
-    private void Awake()
-    {
-        if (Instance == null)
-        {
-            Instance = this;
-        }
-    }
+    //public static ClientBehaviour Instance { get; private set; }
+    //private void Awake()
+    //{
+    //    if (Instance == null)
+    //    {
+    //        Instance = this;
+    //    }
+    //}
 
     public NetworkDriver driver;
     public NetworkConnection connection;

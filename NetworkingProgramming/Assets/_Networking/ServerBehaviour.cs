@@ -7,14 +7,14 @@ using UnityEngine.EventSystems;
 
 public class ServerBehaviour : MonoBehaviour
 {
-    public static ServerBehaviour Instance { get; private set; }
-    private void Awake()
-    {
-        if(Instance == null)
-        {
-            Instance = this;
-        }
-    }
+    //public static ServerBehaviour Instance { get; private set; }
+    //private void Awake()
+    //{
+    //    if(Instance == null)
+    //    {
+    //        Instance = this;
+    //    }
+    //}
 
     public NetworkDriver driver;
     public NativeList<NetworkConnection> connections;
@@ -23,7 +23,7 @@ public class ServerBehaviour : MonoBehaviour
     public Dictionary<NetworkConnection, NetworkedPlayer> playerInstances = new Dictionary<NetworkConnection, NetworkedPlayer>();
 
     private int playerCap = 2;
-    private Action onConnectionDropped;
+    //private Action onConnectionDropped;
 
     [SerializeField] private float keepAliveTickRate = 20f;
     private float keepAliveTimestamp;
